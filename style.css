@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300&display=swap');
+
+* {
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+img {
+  width: 200px;
+}
+
+h1 {
+  color: #394077;
+  font-family: 'Pacifico', cursive;
+  font-size: 1.8rem;
+}
+
+h2 {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 0.8rem;
+  margin-bottom: 20px;
+}
+
+svg {
+  cursor: pointer;
+  fill: #394077;
+  margin: 5px;
+  transform: scale(1.25);
+}
+
+svg:hover {
+  fill: #626893
+}
