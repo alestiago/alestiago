@@ -1,6 +1,7 @@
 #### 👋 About me
 
 I am a thoughtful developer, who enjoys the thrill of challenging new projects and finding creative, clean and efficient solutions. I also love lemurs.
+
 To learn more about me check my [LinkedIn](https://www.linkedin.com/in/alejandro-santiago-44259b159/). 
 
 #### 💻 What am I working on?
