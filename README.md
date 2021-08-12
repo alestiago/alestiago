@@ -1,6 +1,6 @@
 ## 👋🤠 Heelloo! 
 
-I'm glad you landed here, there are lots of pages you could've visit but you ended up here. Amazing! Below are some other pages you may want to land on if you wish to contact or stalk me.
+I'm glad you landed here, there are lots of pages you could've visit but you ended up here, amazing! Below are some other pages you may want to land on if you wish to contact or stalk me.
 
 - Email: dev (at) alestiago (dot) com
 - [Website](https://www.alestiago.com/)
