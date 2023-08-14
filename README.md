@@ -5,7 +5,8 @@ I'm glad you landed here, there are lots of pages you could've visited but you e
 I imagine you want to know something about me before hopping to another page. Well, below I left some bullet points that go straight to the point (pun intended).
 
 - 💼 I'm a software engineer at Very Good Ventures.
-- 🔭 I’m currently working on Cellular Automata.
+- 📚 I'm a computer scientist.
+- 🔭 I’m currently working on Dart Frog.
 - 🎾 I’m learning how to play padel.
 - 💬 Ask me about Flutter and Dart. 
 - 😄 Pronouns: he/him/his
