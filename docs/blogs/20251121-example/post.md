@@ -131,7 +131,7 @@ You can include images in your posts:
 
 ## Conclusion
 
-This blogging system gives you:
+This blogging system gives you:[^blog-features]
 
 - ✅ Full markdown support
 - ✅ Code injection from files
@@ -142,3 +142,4 @@ This blogging system gives you:
 
 Happy blogging! 🎉
 
+[^blog-features]: Alejandro Santiago, “Markdown Blog System Example Post,” *Ale’s Blog*, November 22, 2025.

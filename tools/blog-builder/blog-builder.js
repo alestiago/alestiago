@@ -326,6 +326,96 @@ function processLatex(markdown) {
   return processed;
 }
 
+// Process Chicago-style footnote references:
+// - Inline references: [^id]
+// - Definitions (preferably near the end of the file): [^id]: Reference text...
+//
+// This function:
+// 1. Collects all definitions outside fenced code blocks.
+// 2. Replaces inline [^id] markers with numbered superscripts in order of first use.
+// 3. Removes the original definition lines.
+// 4. Appends a "References" section after a horizontal rule at the end of the document.
+//
+// Notes:
+// - We deliberately keep the reference entries as markdown so authors can use
+//   italics, links, etc. inside each definition.
+// - Only footnotes that are actually referenced in the body are included in
+//   the final References section.
+function processFootnotes(markdown) {
+  // Split on fenced code blocks and only process non-code chunks.
+  const fencedSplit = markdown.split(/(```[\s\S]*?```)/g);
+
+  const footnoteDefs = {};      // id -> markdown text
+  const orderedIds = [];        // in order of first inline reference
+  const indexById = Object.create(null); // id -> 1-based index
+  let counter = 0;
+
+  function stripDefinitions(chunk) {
+    // Collect single-line definitions of the form:
+    // [^id]: Reference text...
+    return chunk.replace(/^\[\^([^\]]+)\]:\s*(.+)$/gm, (match, id, text) => {
+      if (!footnoteDefs[id]) {
+        footnoteDefs[id] = text.trim();
+      }
+      // Remove the definition line from the visible markdown.
+      return '';
+    });
+  }
+
+  function replaceInlineRefs(chunk) {
+    // Protect inline code `...` so we don't accidentally rewrite footnote-like
+    // patterns inside code.
+    const inlineSplit = chunk.split(/(`[^`\n]+`)/g);
+    const processed = inlineSplit.map((part, idx) => {
+      if (idx % 2 === 1 && part.startsWith('`')) {
+        return part; // keep inline code unchanged
+      }
+
+      return part.replace(/\[\^([^\]]+)\]/g, (match, id) => {
+        if (!indexById[id]) {
+          counter += 1;
+          indexById[id] = counter;
+          orderedIds.push(id);
+        }
+        const n = indexById[id];
+        return `<sup class="footnote-ref"><a href="#footnote-${n}" id="footnote-ref-${n}">${n}</a></sup>`;
+      });
+    }).join('');
+
+    return processed;
+  }
+
+  const processedChunks = fencedSplit.map((chunk, idx) => {
+    // Odd indices are the captured fenced code blocks; leave them untouched.
+    if (idx % 2 === 1 && chunk.startsWith('```')) {
+      return chunk;
+    }
+
+    // First strip out any definition lines, then replace inline references.
+    const withoutDefs = stripDefinitions(chunk);
+    return replaceInlineRefs(withoutDefs);
+  });
+
+  let combined = processedChunks.join('');
+
+  // If there are no inline references, don't append a Footnotes section.
+  if (orderedIds.length === 0) {
+    return markdown;
+  }
+
+  // Build the Footnotes section in markdown so definitions can contain
+  // further markdown formatting.
+  let referencesSection = '\n\n---\n\n## Footnotes\n\n';
+  orderedIds.forEach((id, idx) => {
+    const n = idx + 1;
+    const entry = footnoteDefs[id] || '';
+    referencesSection += `${n}. <a id="footnote-${n}"></a>${entry}\n`;
+  });
+
+  combined += referencesSection;
+  return combined;
+}
+
 // Process code injection syntax using JSON-based specs:
 // {{
 //   {
@@ -827,6 +917,22 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
       overflow-y: hidden;
       margin: 1rem 0;
     }
+
+    /* Footnotes */
+    .blog-content .footnote-ref {
+      font-size: 0.75em;
+      vertical-align: super;
+      line-height: 1;
+    }
+
+    .blog-content .footnote-ref a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .blog-content .footnote-ref a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -1088,6 +1194,9 @@ function buildBlog() {
 
       // Process LaTeX
       markdown = processLatex(markdown);
+
+      // Process Chicago-style footnotes (inline [^id] + definitions)
+      markdown = processFootnotes(markdown);
 
       // Convert markdown to HTML
       const content = marked.parse(markdown);

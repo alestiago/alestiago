@@ -127,6 +127,43 @@ The system automatically detects syntax highlighting based on file extension:
 - Shell/Bash (`.sh`, `.bash`)
 - And more...
 
+### Chicago-style Footnotes
+
+You can add Chicago-style notes using a simple footnote syntax:
+
+- **Inline note reference** (in the body):
+
+  ```markdown
+  Dart Frog’s architecture builds on established web patterns.[^dartfrog-arch]
+  ```
+
+- **Footnote definitions** (typically near the end of the file):
+
+  ```markdown
+  [^dartfrog-arch]: Very Good Ventures, *Dart Frog Documentation*, accessed November 22, 2025, https://dartfrog.vgv.dev.
+  [^bloc-testing]: Alejandro Santiago, “Testing Internal Bloc Events,” *Ale’s Blog*, November 22, 2025.
+  ```
+
+Rules:
+
+- Inline references must use the pattern `[^id]` where `id` is a stable key (e.g., `bloc-testing`).
+- Definitions must use the pattern `[^id]: reference text...` (one line per reference).
+- The build script will:
+  - Replace each `[^id]` with a numbered superscript in order of first use.
+  - Remove the original definition lines.
+  - Append a **“Footnotes”** section at the end of the post:
+
+    ```markdown
+    ---
+
+    ## Footnotes
+
+    1. Very Good Ventures, *Dart Frog Documentation*, accessed November 22, 2025, https://dartfrog.vgv.dev.
+    2. Alejandro Santiago, “Testing Internal Bloc Events,” *Ale’s Blog*, November 22, 2025.
+    ```
+
+This lets you keep Chicago-style footnotes in markdown while ensuring they render consistently at the end of each post.
+
 ### LaTeX Math
 
 Write mathematical equations using LaTeX syntax:
