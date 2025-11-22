@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Blog Code Block Specification",
+  "description": "JSON specification for embedding code blocks in blog posts using the `{{ { ... } }}` syntax.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "@type": {
+      "type": "string",
+      "const": "code-block",
+      "description": "Discriminator for the code block spec. Must be exactly \"code-block\"."
+    },
+    "path": {
+      "type": "string",
+      "description": "Relative path to the source code file, resolved from the current blog directory (e.g. \"example.dart\")."
+    },
+    "alias": {
+      "type": "string",
+      "description": "Optional display name shown in the filename tab above the code block. Defaults to the basename of `path`."
+    },
+    "sourceUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "Optional URL to open when clicking the filename tab (e.g. a GitHub or API docs link)."
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optional starting line number to use for the left-hand line number gutter. If omitted, the gutter uses the first included line from `lines` (or 1 when including the full file)."
+    },
+    "lines": {
+      "type": "array",
+      "description": "Optional list of line ranges from the source file to include in the code block. When multiple ranges are specified, they are concatenated with a visual separator line between them. If omitted, the entire file is included.",
+      "items": {
+        "$ref": "#/definitions/lineRange"
+      }
+    },
+    "highlights": {
+      "type": "array",
+      "description": "Optional list of highlight configurations. Each entry assigns a color to one or more line ranges, referenced by original file line numbers.",
+      "items": {
+        "$ref": "#/definitions/highlightSpec"
+      }
+    }
+  },
+  "required": ["@type", "path"],
+  "definitions": {
+    "lineRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "First line number in the range (1-based, inclusive)."
+        },
+        "to": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Last line number in the range (1-based, inclusive). If omitted, the range consists of a single line (`from`)."
+        }
+      },
+      "required": ["from"]
+    },
+    "highlightSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "type": "string",
+          "enum": ["green", "red", "orange", "blue"],
+          "default": "green",
+          "description": "Highlight color to apply to the specified line ranges. If omitted, the default green highlight is used."
+        },
+        "lines": {
+          "type": "array",
+          "description": "One or more line ranges to highlight with this color. Line numbers refer to the original source file, not the snippet's relative numbering.",
+          "items": {
+            "$ref": "#/definitions/lineRange"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["lines"]
+    }
+  }
+}
+
+

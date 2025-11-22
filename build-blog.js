@@ -32,8 +32,7 @@ renderer.code = function (code, infostring, escaped) {
   let startLine = 1;
   let filename = '';
   let lineMap = null;
-  let highlightLines = null;
-  let highlightColor = null;
+  let highlightByLine = null; // Map<number, colorKey|null>
   let sourceUrl = null;
 
   if (info) {
@@ -76,40 +75,70 @@ renderer.code = function (code, infostring, escaped) {
         .filter(n => !Number.isNaN(n));
     }
 
-    const highlightMatch = info.match(/highlight\s*=\s*([^,}\s]+)/i);
-    if (highlightMatch) {
-      const spec = highlightMatch[1];
-      const parts = spec.split(/[|,]/).map(s => s.trim()).filter(Boolean);
-      const set = new Set();
+    // Parse per-line highlight rules. We support both:
+    //   highlight=17-19{color:"red"}
+    //   highlight=6-7{color:"red"},highlight=16-18{color:"orange"} (multiple entries)
+    // as well as legacy:
+    //   highlight=17-19,21  (optionally with highlightColor="red")
+    //
+    // For new-style specs we need to capture the entire `{color:"..."}` block,
+    // including the closing `}`. This pattern captures either:
+    //   - `[^\s,}]+}` → a value ending with `}`, e.g. 17-19{color:"red"}
+    //   - `[^\s,}]+`  → a simple numeric/legacy value, e.g. 17-19 or 21
+    const highlightRegex = /highlight\s*=\s*([^\s,}]+\}|[^\s,}]+)/gi;
+    let hm;
+    let legacyHighlightColor = null;
 
+    const highlightColorMatch = info.match(/highlightColor\s*=\s*"(.*?)"/i);
+    if (highlightColorMatch) {
+      legacyHighlightColor = highlightColorMatch[1].toLowerCase();
+    }
+
+    while ((hm = highlightRegex.exec(info)) !== null) {
+      const spec = hm[1];
+
+      // New syntax with optional inline color: 17-19{color:"red"} or 21{color:"blue"}
+      const newSyntaxMatch = spec.match(/^(\d+)(?:\s*-\s*(\d+))?(?:\{color:"(red|orange|blue)"\})?$/i);
+      if (newSyntaxMatch) {
+        const startNum = parseInt(newSyntaxMatch[1], 10);
+        const endNum = newSyntaxMatch[2] ? parseInt(newSyntaxMatch[2], 10) : startNum;
+        const colorKey = (newSyntaxMatch[3] || '').toLowerCase() || null; // null => default green
+
+        if (!Number.isNaN(startNum) && !Number.isNaN(endNum)) {
+          const from = Math.min(startNum, endNum);
+          const to = Math.max(startNum, endNum);
+          if (!highlightByLine) highlightByLine = new Map();
+          for (let n = from; n <= to; n++) {
+            highlightByLine.set(n, colorKey);
+          }
+        }
+        continue;
+      }
+
+      // Legacy syntax: 17-19,21 (optionally combined with highlightColor="red").
+      const parts = spec.split(/[|,]/).map(s => s.trim()).filter(Boolean);
       for (const part of parts) {
         if (/^\d+\s*-\s*\d+$/.test(part)) {
           const [startStr, endStr] = part.split('-');
-          const start = parseInt(startStr.trim(), 10);
-          const end = parseInt(endStr.trim(), 10);
-          if (!Number.isNaN(start) && !Number.isNaN(end)) {
-            const from = Math.min(start, end);
-            const to = Math.max(start, end);
+          const startNum = parseInt(startStr.trim(), 10);
+          const endNum = parseInt(endStr.trim(), 10);
+          if (!Number.isNaN(startNum) && !Number.isNaN(endNum)) {
+            const from = Math.min(startNum, endNum);
+            const to = Math.max(startNum, endNum);
+            if (!highlightByLine) highlightByLine = new Map();
             for (let n = from; n <= to; n++) {
-              set.add(n);
+              // Legacy: use block-level highlightColor if provided, otherwise default.
+              highlightByLine.set(n, legacyHighlightColor);
             }
           }
         } else {
           const n = parseInt(part, 10);
           if (!Number.isNaN(n)) {
-            set.add(n);
+            if (!highlightByLine) highlightByLine = new Map();
+            highlightByLine.set(n, legacyHighlightColor);
           }
         }
       }
-
-      if (set.size > 0) {
-        highlightLines = set;
-      }
-    }
-
-    const highlightColorMatch = info.match(/highlightColor\s*=\s*([^,}\s]+)/i);
-    if (highlightColorMatch) {
-      highlightColor = highlightColorMatch[1].toLowerCase();
     }
   }
 
@@ -152,7 +181,8 @@ renderer.code = function (code, infostring, escaped) {
       lineNumber = startLine + idx;
     }
 
-    const shouldHighlight = !isEllipsis && highlightLines && highlightLines.has(lineNumber);
+    const colorKey = !isEllipsis && highlightByLine ? highlightByLine.get(lineNumber) : undefined;
+    const shouldHighlight = colorKey !== undefined;
 
     if (isEllipsis) {
       // Ellipsis line: no visible code content, but the line-number gutter
@@ -164,13 +194,14 @@ renderer.code = function (code, infostring, escaped) {
     const classes = ['code-line'];
     if (shouldHighlight) {
       classes.push('code-highlight');
-      if (highlightColor === 'red') {
+      if (colorKey === 'red') {
         classes.push('code-highlight-red');
-      } else if (highlightColor === 'orange') {
+      } else if (colorKey === 'orange') {
         classes.push('code-highlight-orange');
-      } else if (highlightColor === 'blue') {
+      } else if (colorKey === 'blue') {
         classes.push('code-highlight-blue');
       }
+      // Otherwise, default green via .code-highlight.
     }
 
     return `<span class="${classes.join(' ')}" data-line="${lineNumber}">${safeLine}</span>`;
@@ -286,92 +317,53 @@ function processLatex(markdown) {
   return processed;
 }
 
-// Process code injection syntax: {{code:path/to/file.ext:5-8}} or
-// with multiple ranges: {{code:path/to/file.ext:5-8,16-20}}
+// Process code injection syntax. Supports both:
+// 1) Legacy: {{code:path/to/file.ext:5-8}} or with multiple ranges:
+//    {{code:path/to/file.ext:5-8,16-20}}
+// 2) JSON-based: {{
+//       "@type": "code-block",
+//       "path": "example.dart",
+//       "alias": "bloc/hello.dart",
+//       "sourceUrl": "https://...",
+//       "lines": [ { "from": 5, "to": 8 }, { "from": 16, "to": 20 } ],
+//       "highlights": [ { "color": "orange", "lines": [ { "from": 16, "to": 20 } ] } ]
+//    }}
 function processCodeInjection(markdown, blogDir) {
-  return markdown.replace(/\{\{code:([^}]+)\}\}/g, (match, codeSpec) => {
-    // Split into "file path" and "options" (ranges + metadata). Everything
-    // after the first ":" is treated as options so values (like URLs) can
-    // safely contain ":" characters.
-    const firstColon = codeSpec.indexOf(':');
-    const filePath = (firstColon === -1
-      ? codeSpec
-      : codeSpec.slice(0, firstColon)
-    ).trim();
-    const optionsPart = firstColon === -1
-      ? ''
-      : codeSpec.slice(firstColon + 1);
+  // First handle JSON-based code block specs: {{ { ... } }}
+  markdown = markdown.replace(/\{\{([\s\S]*?)\}\}/g, (match, innerRaw) => {
+    const inner = innerRaw.trim();
+    if (!inner.startsWith('{')) return match;
 
-    const lineRanges = [];
-    let explicitStart = null;
-    let highlightSpec = null;
-    let highlightColorSpec = null;
-    let aliasSpec = null;
-    let sourceUrlSpec = null;
+    let spec;
+    try {
+      spec = JSON.parse(inner);
+    } catch (e) {
+      // Not valid JSON; leave untouched.
+      return match;
+    }
 
-    if (optionsPart && optionsPart.trim()) {
-      const opts = optionsPart.trim();
-
-      // 1) Extract base line ranges ONLY from the section before any
-      //    key=value metadata (start=, highlight=, etc.) so that ranges
-      //    inside highlight specs aren't treated as injection ranges.
-      const metaKeyIndex = opts.search(/\b(start|highlight|highlightColor|alias|sourceUrl)\s*=/i);
-      const rangesPart = metaKeyIndex === -1 ? opts : opts.slice(0, metaKeyIndex);
-
-      const rangeRegex = /\b(\d+\s*-\s*\d+)\b/g;
-      let m;
-      while ((m = rangeRegex.exec(rangesPart)) !== null) {
-        lineRanges.push(m[1]);
-      }
-
-      // 2) Extract key=value metadata from the whole options string.
-      const optionRegex = /\b(start|highlight|highlightColor|alias|sourceUrl)\s*=\s*("[^"]*"|'[^']*'|[^,]+)/gi;
-      while ((m = optionRegex.exec(opts)) !== null) {
-        const key = m[1].toLowerCase();
-        let value = m[2].trim();
-
-        // Strip optional surrounding quotes
-        if ((value.startsWith('"') && value.endsWith('"')) ||
-          (value.startsWith("'") && value.endsWith("'"))) {
-          value = value.slice(1, -1);
-        }
-
-        if (key === 'start') {
-          const n = parseInt(value, 10);
-          if (!Number.isNaN(n)) {
-            explicitStart = n;
-          }
-        } else if (key === 'highlight') {
-          highlightSpec = value;
-        } else if (key === 'highlightcolor') {
-          highlightColorSpec = value;
-        } else if (key === 'alias') {
-          aliasSpec = value;
-        } else if (key === 'sourceurl') {
-          sourceUrlSpec = value;
-        }
-      }
+    if (!spec || spec['@type'] !== 'code-block' || !spec.path) {
+      return match;
     }
 
     try {
+      const filePath = String(spec.path).trim();
       const fullPath = path.join(blogDir, filePath);
       let content = fs.readFileSync(fullPath, 'utf-8');
-
       const allLines = content.split('\n');
 
-      // Extract line range(s) if specified
+      // Decide which lines to include.
       let inferredStart = 1;
       let lineMapNumbers = null;
-      if (lineRanges.length > 0) {
+
+      if (Array.isArray(spec.lines) && spec.lines.length > 0) {
         const segments = [];
         lineMapNumbers = [];
 
-        for (let idx = 0; idx < lineRanges.length; idx++) {
-          const range = lineRanges[idx];
-          const [start, end] = range.split('-').map(n => parseInt(n.trim(), 10));
-          if (Number.isNaN(start) || Number.isNaN(end)) {
-            continue;
-          }
+        spec.lines.forEach((range, idx) => {
+          if (!range || typeof range.from !== 'number') return;
+          const start = Math.max(1, Math.floor(range.from));
+          const end = typeof range.to === 'number' ? Math.floor(range.to) : start;
 
           const segment = allLines.slice(start - 1, end);
           if (segment.length > 0) {
@@ -381,7 +373,6 @@ function processCodeInjection(markdown, blogDir) {
             }
             segments.push(...segment);
 
-            // Record the original line numbers for each emitted line
             for (let n = start; n <= end; n++) {
               lineMapNumbers.push(n);
             }
@@ -390,9 +381,38 @@ function processCodeInjection(markdown, blogDir) {
           if (idx === 0) {
             inferredStart = start;
           }
-        }
+        });
 
         content = segments.join('\n');
+      } else {
+        // No explicit ranges → include the whole file and build a simple line map.
+        inferredStart = 1;
+        lineMapNumbers = allLines.map((_, idx) => idx + 1);
+      }
+
+      // Build highlight segments using the same mini-language the renderer
+      // already understands (e.g. 17-19{color:"orange"}).
+      const highlightSegments = [];
+      if (Array.isArray(spec.highlights)) {
+        for (const h of spec.highlights) {
+          if (!h || !Array.isArray(h.lines)) continue;
+          const colorKey = typeof h.color === 'string'
+            ? h.color.toLowerCase()
+            : null;
+
+          for (const lr of h.lines) {
+            if (!lr || typeof lr.from !== 'number') continue;
+            const start = Math.max(1, Math.floor(lr.from));
+            const end = typeof lr.to === 'number' ? Math.floor(lr.to) : start;
+            if (Number.isNaN(start) || Number.isNaN(end)) continue;
+
+            let seg = `${start}-${end}`;
+            if (colorKey && colorKey !== 'green') {
+              seg += `{color:"${colorKey}"}`;
+            }
+            highlightSegments.push(seg);
+          }
+        }
       }
 
       // Detect file extension for syntax highlighting
@@ -420,7 +440,10 @@ function processCodeInjection(markdown, blogDir) {
       };
       const lang = langMap[ext] || ext;
 
-      // Decide starting line number for line numbering
+      const explicitStart = typeof spec.start === 'number'
+        ? Math.floor(spec.start)
+        : null;
+
       const startForNumbering = Number.isInteger(explicitStart)
         ? explicitStart
         : inferredStart;
@@ -433,37 +456,30 @@ function processCodeInjection(markdown, blogDir) {
       if (baseName) {
         metaParts.push(`file=${baseName}`);
       }
-
       if (lineMapNumbers && lineMapNumbers.length > 0) {
-        // Encode the per-line mapping so the renderer can show correct
-        // original line numbers even across disjoint ranges.
         metaParts.push(`lineMap=${lineMapNumbers.join('|')}`);
       }
-
-      if (highlightSpec) {
-        metaParts.push(`highlight=${highlightSpec}`);
+      for (const seg of highlightSegments) {
+        metaParts.push(`highlight=${seg}`);
       }
-      if (highlightColorSpec) {
-        metaParts.push(`highlightColor="${highlightColorSpec}"`);
+      if (spec.alias) {
+        metaParts.push(`alias="${spec.alias}"`);
       }
-      if (aliasSpec) {
-        metaParts.push(`alias="${aliasSpec}"`);
-      }
-      if (sourceUrlSpec) {
-        metaParts.push(`sourceUrl="${sourceUrlSpec}"`);
+      if (spec.sourceUrl) {
+        metaParts.push(`sourceUrl="${spec.sourceUrl}"`);
       }
 
       const meta = metaParts.length ? ` {${metaParts.join(', ')}}` : '';
       const infoString = `${lang}${meta}`;
 
-      // Return as markdown code block with optional starting line metadata
       return '```' + infoString + '\n' + content + '\n```';
-
     } catch (err) {
-      console.error(`Error reading code file ${filePath}:`, err.message);
-      return `\`\`\`\nError: Could not read file ${filePath}\n\`\`\``;
+      console.error('Error processing JSON code block:', err.message);
+      return match;
     }
   });
+
+  return markdown;
 }
 
 // Extract title from markdown (first h1)
@@ -926,4 +942,5 @@ function buildBlog() {
 
 // Run the build
 buildBlog();
+
 

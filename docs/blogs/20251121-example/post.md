@@ -21,11 +21,41 @@ You can write using standard markdown syntax:
 
 One of the coolest features is the ability to reference code files directly. Here's an example Dart file:
 
-{{code:example.dart}}
+{{
+  {
+    "@type": "code-block",
+    "path": "example.dart"
+  }
+}}
 
-You can also reference specific line ranges. Here are just lines 5-8 from the same file:
+You can also reference specific line ranges. Here are just lines 5-8 and 16-20 from the same file, with 16-20 highlighted in orange:
 
-{{code:example.dart:5-8,16-20:highlight=5-6,17-19,highlightColor="orange":alias="bloc/hello.dart":sourceUrl="https://api.flutter.dev/flutter/material/Scaffold-class.html"}}
+{{
+  {
+    "@type": "code-block",
+    "path": "example.dart",
+    "alias": "bloc/hello.dart",
+    "sourceUrl": "https://api.flutter.dev/flutter/material/Scaffold-class.html",
+    "lines": [
+      { "from": 5, "to": 8 },
+      { "from": 16, "to": 20 }
+    ],
+    "highlights": [
+      {
+        "color": "orange",
+        "lines": [
+          { "from": 16, "to": 18 }
+        ]
+      },
+      {
+        "color": "red",
+        "lines": [
+          { "from": 5, "to": 6 }
+        ]
+      }
+    ]
+  }
+}}
 
 ## Syntax Highlighting
 
