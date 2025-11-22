@@ -529,7 +529,7 @@ function extractBlogPostMetadata(markdown) {
 }
 
 // Generate blog post HTML
-function generateBlogHTML(title, subtitle, content, date, blogPath) {
+function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, date, updatedAt, estimatedReadingTime, blogPath) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -580,10 +580,39 @@ function generateBlogHTML(title, subtitle, content, date, blogPath) {
       margin-bottom: 0.5rem;
     }
     
-    .blog-date {
+    .blog-date-row {
       color: #555;
       font-size: 0.9rem;
       margin: 0.6rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    
+    .blog-author {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    
+    .blog-author-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 9999px;
+      object-fit: cover;
+      display: inline-block;
+    }
+    
+    .blog-author-name {
+      font-weight: 500;
+      color: #222;
+    }
+    
+    .blog-divider {
+      border: 0;
+      border-top: 1px solid #e1e4e8;
+      margin: 1.25rem 0 1.5rem;
     }
     
     .blog-content h1 {
@@ -799,8 +828,18 @@ function generateBlogHTML(title, subtitle, content, date, blogPath) {
   <div class="blog-header">
     <h1>${title}</h1>
     ${subtitle ? `<div class="blog-subtitle">${subtitle}</div>` : ''}
-    <div class="blog-date">${date}</div>
+    <div class="blog-date-row">
+      ${[
+      authorName
+        ? `<span class="blog-author">${authorAvatar ? `<img class="blog-author-avatar" src="${escapeHtml(authorAvatar)}" alt="">` : ''}<span class="blog-author-name">${escapeHtml(authorName)}</span></span>`
+        : '',
+      estimatedReadingTime || '',
+      date + (updatedAt ? ` (Edited ${updatedAt})` : '')
+    ].filter(Boolean).join(' · ')}
+    </div>
   </div>
+  
+  <hr class="blog-divider">
   
   <div class="blog-content">
     ${content}
@@ -816,7 +855,9 @@ function generateIndexHTML(posts) {
     <div class="blog-post-item">
       <h2><a href="${post.folder}/index.html">${post.title}</a></h2>
       ${post.subtitle ? `<div class="post-subtitle">${post.subtitle}</div>` : ''}
-      <div class="post-date">${post.date}</div>
+      <div class="post-date">
+        ${post.estimatedReadingTime ? `${post.estimatedReadingTime} · ` : ''}${post.date}${post.updatedAt ? ` (Last edited ${post.updatedAt})` : ''}
+      </div>
     </div>`;
   }).join('\n');
 
@@ -895,6 +936,24 @@ function generateIndexHTML(posts) {
       color: #555;
       font-size: 0.9rem;
     }
+
+    .post-date-label {
+      font-weight: 500;
+    }
+
+    .post-updated-label {
+      font-weight: 500;
+      color: #666;
+    }
+
+    .post-updated-value {
+      color: #666;
+      font-style: italic;
+    }
+
+    .post-date-separator {
+      color: #ccc;
+    }
   </style>
 </head>
 <body>
@@ -913,17 +972,23 @@ function generateIndexHTML(posts) {
 </html>`;
 }
 
-// Format date from folder name (YYYYMMDD-title)
-function formatDate(folderName) {
+// Parse a Date from folder name (YYYYMMDD-title)
+function parseFolderDate(folderName) {
   const dateMatch = folderName.match(/^(\d{4})(\d{2})(\d{2})/);
-  if (!dateMatch) return folderName;
+  if (!dateMatch) return null;
 
   const [, year, month, day] = dateMatch;
-  const date = new Date(year, parseInt(month) - 1, day);
+  return new Date(year, parseInt(month, 10) - 1, parseInt(day, 10));
+}
+
+// Format date from folder name (YYYYMMDD-title)
+function formatDate(folderName) {
+  const date = parseFolderDate(folderName);
+  if (!date) return folderName;
 
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric'
   });
 }
@@ -983,6 +1048,23 @@ function buildBlog() {
         subtitle = metadata.subtitle.trim();
       }
 
+      // Optional author from metadata. Supports either a simple string
+      // (backwards-compatible) or an object with { name, avatar }.
+      let authorName = '';
+      let authorAvatar = '';
+      if (metadata && metadata.author) {
+        if (typeof metadata.author === 'string' && metadata.author.trim()) {
+          authorName = metadata.author.trim();
+        } else if (typeof metadata.author === 'object') {
+          if (typeof metadata.author.name === 'string' && metadata.author.name.trim()) {
+            authorName = metadata.author.name.trim();
+          }
+          if (typeof metadata.author.avatar === 'string' && metadata.author.avatar.trim()) {
+            authorAvatar = metadata.author.avatar.trim();
+          }
+        }
+      }
+
       // Process code injection
       markdown = processCodeInjection(markdown, blogDir);
 
@@ -995,8 +1077,42 @@ function buildBlog() {
       // Format date
       const date = formatDate(folder);
 
+      // Optional updatedAt from metadata. We treat it as an ISO-8601 date string
+      // (e.g. YYYY-MM-DD). If it parses to a valid Date and is different from
+      // the publishing date derived from the folder name, we display it.
+      let updatedAtDisplay = '';
+      if (metadata && typeof metadata.updatedAt === 'string' && metadata.updatedAt.trim()) {
+        const rawFolderDate = parseFolderDate(folder);
+        const updated = new Date(metadata.updatedAt.trim());
+
+        if (rawFolderDate && !Number.isNaN(updated.getTime())) {
+          const sameYMD =
+            updated.getFullYear() === rawFolderDate.getFullYear() &&
+            updated.getMonth() === rawFolderDate.getMonth() &&
+            updated.getDate() === rawFolderDate.getDate();
+
+          if (!sameYMD) {
+            updatedAtDisplay = updated.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            });
+          }
+        }
+      }
+
+      // Optional estimatedReadingTime from metadata. We expect a positive integer
+      // number of minutes and render it as e.g. "7 min read".
+      let estimatedReadingTimeDisplay = '';
+      if (metadata && metadata.estimatedReadingTime !== undefined && metadata.estimatedReadingTime !== null) {
+        const minutes = parseInt(String(metadata.estimatedReadingTime), 10);
+        if (!Number.isNaN(minutes) && minutes > 0) {
+          estimatedReadingTimeDisplay = `${minutes} min read`;
+        }
+      }
+
       // Generate HTML
-      const html = generateBlogHTML(title, subtitle, content, date, folder);
+      const html = generateBlogHTML(title, subtitle, authorName, authorAvatar, content, date, updatedAtDisplay, estimatedReadingTimeDisplay, folder);
 
       // Write HTML file
       const htmlPath = path.join(blogDir, 'index.html');
@@ -1010,6 +1126,8 @@ function buildBlog() {
         title,
         subtitle,
         date,
+        updatedAt: updatedAtDisplay,
+        estimatedReadingTime: estimatedReadingTimeDisplay,
         dateSort: folder.substring(0, 8) // YYYYMMDD for sorting
       });
 

@@ -19,6 +19,36 @@
             "type": "string",
             "minLength": 1,
             "description": "Optional short subtitle or tagline for the blog post. When present, it is shown under the title on the post page and on the blog index."
+        },
+        "author": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Optional author information for the blog post. When present, the author name is shown before the estimated reading time in the metadata line on the post page, with an optional avatar rendered to the left of the name.",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Author name to display on the blog post page."
+                },
+                "avatar": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Optional URL to an avatar image for the author. When provided, it is rendered as a circular avatar to the left of the author name."
+                }
+            },
+            "required": [
+                "name"
+            ]
+        },
+        "updatedAt": {
+            "type": "string",
+            "format": "date",
+            "description": "Optional last updated date for the blog post in ISO 8601 date format (YYYY-MM-DD). When provided and different from the publishing date derived from the folder name, it is shown as the updated date on the post page and blog index."
+        },
+        "estimatedReadingTime": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Optional estimated reading time for the blog post, in whole minutes. When provided and positive, it is displayed as \"N min read\" on the post page and blog index."
         }
     },
     "required": [

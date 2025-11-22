@@ -48,10 +48,39 @@
       margin-bottom: 0.5rem;
     }
     
-    .blog-date {
+    .blog-date-row {
       color: #555;
       font-size: 0.9rem;
       margin: 0.6rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    
+    .blog-author {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    
+    .blog-author-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 9999px;
+      object-fit: cover;
+      display: inline-block;
+    }
+    
+    .blog-author-name {
+      font-weight: 500;
+      color: #222;
+    }
+    
+    .blog-divider {
+      border: 0;
+      border-top: 1px solid #e1e4e8;
+      margin: 1.25rem 0 1.5rem;
     }
     
     .blog-content h1 {
@@ -267,12 +296,15 @@
   <div class="blog-header">
     <h1>Welcome to my blog!</h1>
     <div class="blog-subtitle">This is an example blog post</div>
-    <div class="blog-date">November 21, 2025</div>
+    <div class="blog-date-row">
+      <span class="blog-author"><img class="blog-author-avatar" src="https://avatars.githubusercontent.com/u/44524995?v=4" alt=""><span class="blog-author-name">Alejandro Santiago</span></span> · 7 min read · Nov 21, 2025 (Edited Nov 22, 2025)
+    </div>
   </div>
   
+  <hr class="blog-divider">
+  
   <div class="blog-content">
-    <h1>Welcome to My Blog</h1>
-<p>This is an example blog post demonstrating all the features of the markdown blogging system.</p>
+    <p>This is an example blog post demonstrating all the features of the markdown blogging system.</p>
 <h2>Writing in Markdown</h2>
 <p>You can write using standard markdown syntax:</p>
 <ul>
