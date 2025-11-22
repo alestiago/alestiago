@@ -536,11 +536,14 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} - Alejandro Santiago</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <style>
     body {
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
       line-height: 1.6;
       padding: 2rem;
       max-width: 720px;
@@ -568,9 +571,11 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
     }
     
     .blog-header h1 {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       margin-bottom: 0.25rem;
       color: #111;
+      letter-spacing: 0.01em;
+      font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
     }
     
     .blog-subtitle {
@@ -588,6 +593,7 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
       flex-wrap: wrap;
       gap: 0.5rem;
       align-items: center;
+      font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
     }
     
     .blog-author {
@@ -607,6 +613,7 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
     .blog-author-name {
       font-weight: 500;
       color: #222;
+      font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
     }
     
     .blog-divider {
@@ -620,6 +627,7 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
       margin-top: 2rem;
       margin-bottom: 0.5rem;
       color: #111;
+      font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
     }
     
     .blog-content h2 {
@@ -627,6 +635,7 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
       margin-top: 1.5rem;
       margin-bottom: 0.5rem;
       color: #111;
+      font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
     }
     
     .blog-content h3 {
@@ -634,6 +643,7 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
       margin-top: 1.25rem;
       margin-bottom: 0.5rem;
       color: #111;
+      font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
     }
     
     .blog-content p {
@@ -867,9 +877,12 @@ function generateIndexHTML(posts) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blog - Alejandro Santiago</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
       line-height: 1.6;
       padding: 2rem;
       max-width: 720px;
@@ -896,9 +909,11 @@ function generateIndexHTML(posts) {
     }
     
     .blog-header h1 {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       margin-bottom: 0.25rem;
       color: #111;
+      letter-spacing: 0.01em;
+      font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
     }
     
     .blog-post-item {
@@ -915,12 +930,14 @@ function generateIndexHTML(posts) {
       margin: 0 0 0.25rem 0;
       font-size: 1.25rem;
       font-weight: 600;
+      font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
     }
     
     .post-subtitle {
       margin: 0.1rem 0 0.35rem 0;
       font-size: 0.95rem;
       color: #444;
+      font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
     }
     
     .blog-post-item a {
@@ -935,6 +952,7 @@ function generateIndexHTML(posts) {
     .post-date {
       color: #555;
       font-size: 0.9rem;
+      font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
     }
 
     .post-date-label {
