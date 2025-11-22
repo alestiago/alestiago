@@ -51,9 +51,12 @@ renderer.code = function (code, infostring, escaped) {
   }
 
   // Split into lines, keeping empty ones to preserve structure.
-  // We join with an empty string so we don't create extra text nodes/newlines
-  // between each line inside the <code> element.
+  // Then trim any trailing empty/whitespace-only lines so we don't end up
+  // with a large blank area at the bottom of the code block.
   const lines = highlighted.replace(/\n$/, '').split('\n');
+  while (lines.length > 0 && lines[lines.length - 1].trim() === '') {
+    lines.pop();
+  }
   const lineHtml = lines.map((line, idx) => {
     const lineNumber = startLine + idx;
     const safeLine = line === '' ? ' ' : line;
@@ -67,7 +70,10 @@ renderer.code = function (code, infostring, escaped) {
 
   const counterStart = Math.max(startLine - 1, 0);
 
-  return `<pre class="code-block code-with-lines"><code class="${classes}" data-start="${startLine}" style="counter-reset: line-number ${counterStart};">${lineHtml}\n</code></pre>\n`;
+  // Important: do NOT append a trailing newline inside <code>, because with
+  // white-space: pre that would render as an extra blank line after the last
+  // code line. We only keep the newline after </pre> for nicer HTML source.
+  return `<pre class="code-block code-with-lines"><code class="${classes}" data-start="${startLine}" style="counter-reset: line-number ${counterStart};">${lineHtml}</code></pre>\n`;
 };
 
 // Ensure Dart is registered for syntax highlighting
@@ -346,8 +352,8 @@ function generateBlogHTML(title, content, date, blogPath) {
     .blog-content pre.code-with-lines code {
       display: block;
       white-space: pre;
-      padding-left: 3.25em; /* space for line-number gutter entirely inside the border */
-      line-height: 1.5em; /* compact line spacing for code blocks */
+      padding: 1em 0 1em 3.25em; /* vertical padding + left gutter */
+      line-height: 1.5em;
     }
 
     .blog-content pre.code-with-lines .code-line {
