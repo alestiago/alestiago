@@ -1,0 +1,27 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Blog Post Metadata Specification",
+    "description": "JSON specification for blog post metadata blocks embedded in markdown using the `{{ { ... } }}` syntax. If no title is provided here or via a markdown H1 heading, the system falls back to \"Untitled\".",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "@type": {
+            "type": "string",
+            "const": "blog-post-metadata",
+            "description": "Discriminator for the blog post metadata spec. Must be exactly \"blog-post-metadata\"."
+        },
+        "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional human-readable title of the blog post. When present, this overrides the first markdown H1 heading for the post page and the blog index."
+        },
+        "subtitle": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional short subtitle or tagline for the blog post. When present, it is shown under the title on the post page and on the blog index."
+        }
+    },
+    "required": [
+        "@type"
+    ]
+}

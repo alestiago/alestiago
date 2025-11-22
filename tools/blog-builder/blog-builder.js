@@ -499,8 +499,37 @@ function extractTitle(markdown) {
   return match ? match[1] : 'Untitled';
 }
 
+// Extract blog-post metadata (JSON block inside {{ ... }}) and remove it
+function extractBlogPostMetadata(markdown) {
+  let metadata = null;
+
+  const cleaned = markdown.replace(/\{\{([\s\S]*?)\}\}/g, (match, innerRaw) => {
+    const inner = innerRaw.trim();
+    if (!inner.startsWith('{')) return match;
+
+    let spec;
+    try {
+      spec = JSON.parse(inner);
+    } catch (e) {
+      // Not valid JSON; leave untouched.
+      return match;
+    }
+
+    if (!spec || spec['@type'] !== 'blog-post-metadata') {
+      // Not a blog-post metadata block; leave for other processors (e.g. code-block).
+      return match;
+    }
+
+    metadata = spec;
+    // Strip metadata block from markdown output.
+    return '';
+  });
+
+  return { metadata, markdown: cleaned };
+}
+
 // Generate blog post HTML
-function generateBlogHTML(title, content, date, blogPath) {
+function generateBlogHTML(title, subtitle, content, date, blogPath) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -542,6 +571,13 @@ function generateBlogHTML(title, content, date, blogPath) {
       font-size: 1.5rem;
       margin-bottom: 0.25rem;
       color: #111;
+    }
+    
+    .blog-subtitle {
+      font-size: 1rem;
+      color: #444;
+      margin-top: 0.25rem;
+      margin-bottom: 0.5rem;
     }
     
     .blog-date {
@@ -762,6 +798,7 @@ function generateBlogHTML(title, content, date, blogPath) {
   
   <div class="blog-header">
     <h1>${title}</h1>
+    ${subtitle ? `<div class="blog-subtitle">${subtitle}</div>` : ''}
     <div class="blog-date">${date}</div>
   </div>
   
@@ -778,6 +815,7 @@ function generateIndexHTML(posts) {
     return `
     <div class="blog-post-item">
       <h2><a href="${post.folder}/index.html">${post.title}</a></h2>
+      ${post.subtitle ? `<div class="post-subtitle">${post.subtitle}</div>` : ''}
       <div class="post-date">${post.date}</div>
     </div>`;
   }).join('\n');
@@ -838,6 +876,12 @@ function generateIndexHTML(posts) {
       font-weight: 600;
     }
     
+    .post-subtitle {
+      margin: 0.1rem 0 0.35rem 0;
+      font-size: 0.95rem;
+      color: #444;
+    }
+    
     .blog-post-item a {
       color: #0366d6;
       text-decoration: none;
@@ -886,7 +930,7 @@ function formatDate(folderName) {
 
 // Main build function
 function buildBlog() {
-  const blogsDir = path.join(__dirname, 'docs', 'blogs');
+  const blogsDir = path.join(__dirname, '../../docs', 'blogs');
 
   // Create blogs directory if it doesn't exist
   if (!fs.existsSync(blogsDir)) {
@@ -919,8 +963,25 @@ function buildBlog() {
     try {
       let markdown = fs.readFileSync(mdPath, 'utf-8');
 
-      // Extract title
-      const title = extractTitle(markdown);
+      // Extract blog-post metadata (and strip it from the markdown content)
+      const extracted = extractBlogPostMetadata(markdown);
+      const metadata = extracted.metadata || null;
+      markdown = extracted.markdown;
+
+      // Extract title, preferring metadata when available, otherwise falling back
+      // to the first markdown H1 and finally to "Untitled".
+      let title = 'Untitled';
+      if (metadata && typeof metadata.title === 'string' && metadata.title.trim()) {
+        title = metadata.title.trim();
+      } else {
+        title = extractTitle(markdown) || 'Untitled';
+      }
+
+      // Optional subtitle from metadata
+      let subtitle = '';
+      if (metadata && typeof metadata.subtitle === 'string' && metadata.subtitle.trim()) {
+        subtitle = metadata.subtitle.trim();
+      }
 
       // Process code injection
       markdown = processCodeInjection(markdown, blogDir);
@@ -935,7 +996,7 @@ function buildBlog() {
       const date = formatDate(folder);
 
       // Generate HTML
-      const html = generateBlogHTML(title, content, date, folder);
+      const html = generateBlogHTML(title, subtitle, content, date, folder);
 
       // Write HTML file
       const htmlPath = path.join(blogDir, 'index.html');
@@ -947,6 +1008,7 @@ function buildBlog() {
       posts.push({
         folder,
         title,
+        subtitle,
         date,
         dateSort: folder.substring(0, 8) // YYYYMMDD for sorting
       });
@@ -970,5 +1032,3 @@ function buildBlog() {
 
 // Run the build
 buildBlog();
-
-

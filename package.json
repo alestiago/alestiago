@@ -1,20 +1,8 @@
 {
-    "name": "alestiago-blog",
+    "name": "alestiago-workspace",
     "version": "1.0.0",
-    "description": "Personal blog with markdown support",
-    "main": "build-blog.js",
+    "private": true,
     "scripts": {
-        "build": "node build-blog.js"
-    },
-    "keywords": [
-        "blog",
-        "markdown"
-    ],
-    "author": "Alejandro Santiago",
-    "license": "MIT",
-    "dependencies": {
-        "marked": "^11.1.1",
-        "highlight.js": "^11.9.0",
-        "katex": "^0.16.9"
+        "build": "npm run build --prefix tools/blog-builder"
     }
 }

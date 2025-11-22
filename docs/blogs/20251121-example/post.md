@@ -1,3 +1,11 @@
+{{
+  {
+    "@type": "blog-post-metadata",
+    "title": "Welcome to my blog!",
+    "subtitle": "This is an example blog post"
+  }
+}}
+
 # Welcome to My Blog
 
 This is an example blog post demonstrating all the features of the markdown blogging system.
