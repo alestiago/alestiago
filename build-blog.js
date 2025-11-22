@@ -85,10 +85,10 @@ marked.setOptions({
   gfm: true
 });
 
-// Process LaTeX in markdown
-function processLatex(markdown) {
+// Apply KaTeX rendering to a plain text segment (no code)
+function applyLatexToSegment(text) {
   // Inline math: \( ... \) or $ ... $
-  markdown = markdown.replace(/\\\((.+?)\\\)/g, (match, math) => {
+  text = text.replace(/\\\((.+?)\\\)/g, (match, math) => {
     try {
       return katex.renderToString(math, { throwOnError: false, displayMode: false });
     } catch (e) {
@@ -96,7 +96,7 @@ function processLatex(markdown) {
     }
   });
 
-  markdown = markdown.replace(/\$(.+?)\$/g, (match, math) => {
+  text = text.replace(/\$(.+?)\$/g, (match, math) => {
     try {
       return katex.renderToString(math, { throwOnError: false, displayMode: false });
     } catch (e) {
@@ -105,7 +105,7 @@ function processLatex(markdown) {
   });
 
   // Block math: \[ ... \] or $$ ... $$
-  markdown = markdown.replace(/\\\[(.+?)\\\]/gs, (match, math) => {
+  text = text.replace(/\\\[(.+?)\\\]/gs, (match, math) => {
     try {
       return katex.renderToString(math, { throwOnError: false, displayMode: true });
     } catch (e) {
@@ -113,7 +113,7 @@ function processLatex(markdown) {
     }
   });
 
-  markdown = markdown.replace(/\$\$(.+?)\$\$/gs, (match, math) => {
+  text = text.replace(/\$\$(.+?)\$\$/gs, (match, math) => {
     try {
       return katex.renderToString(math, { throwOnError: false, displayMode: true });
     } catch (e) {
@@ -121,7 +121,33 @@ function processLatex(markdown) {
     }
   });
 
-  return markdown;
+  return text;
+}
+
+// Process LaTeX in markdown, skipping fenced and inline code
+function processLatex(markdown) {
+  // First, protect fenced code blocks ```...``` (including content)
+  const fencedSplit = markdown.split(/(```[\s\S]*?```)/g);
+
+  const processed = fencedSplit.map((chunk, index) => {
+    // Odd indices are the captured fenced code blocks (because of the capturing group)
+    if (index % 2 === 1 && chunk.startsWith('```')) {
+      return chunk; // leave fenced code exactly as-is
+    }
+
+    // For non-code chunks, also protect inline code `...`
+    const inlineSplit = chunk.split(/(`[^`\n]+`)/g);
+    const processedInline = inlineSplit.map((part, idx) => {
+      if (idx % 2 === 1 && part.startsWith('`')) {
+        return part; // leave inline code unchanged
+      }
+      return applyLatexToSegment(part);
+    }).join('');
+
+    return processedInline;
+  }).join('');
+
+  return processed;
 }
 
 // Process code injection syntax: {{code:path/to/file.ext:start-end}}
@@ -310,7 +336,7 @@ function generateBlogHTML(title, content, date, blogPath) {
     /* Line-numbered code blocks */
     .blog-content pre.code-with-lines {
       position: relative;
-      padding-left: 0;
+      padding: 0;
       overflow-x: auto;
       overflow-y: hidden;
     }
@@ -319,12 +345,14 @@ function generateBlogHTML(title, content, date, blogPath) {
       display: block;
       white-space: pre;
       padding-left: 3.25em; /* space for line-number gutter entirely inside the border */
+      line-height: 0.7em; /* compact line spacing for code blocks */
     }
 
     .blog-content pre.code-with-lines .code-line {
       display: block;
       position: relative;
       padding-left: 0.25em;
+      line-height: inherit;
     }
 
     .blog-content pre.code-with-lines .code-line::before {

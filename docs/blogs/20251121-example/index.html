@@ -97,7 +97,7 @@
     /* Line-numbered code blocks */
     .blog-content pre.code-with-lines {
       position: relative;
-      padding-left: 0;
+      padding: 0;
       overflow-x: auto;
       overflow-y: hidden;
     }
@@ -106,12 +106,14 @@
       display: block;
       white-space: pre;
       padding-left: 3.25em; /* space for line-number gutter entirely inside the border */
+      line-height: 0.7em; /* compact line spacing for code blocks */
     }
 
     .blog-content pre.code-with-lines .code-line {
       display: block;
       position: relative;
       padding-left: 0.25em;
+      line-height: inherit;
     }
 
     .blog-content pre.code-with-lines .code-line::before {
@@ -200,12 +202,12 @@
 <span class="code-line" data-line="4">  <span class="hljs-comment">// Calculate factorial</span></span>
 <span class="code-line" data-line="5">  <span class="hljs-built_in">int</span> n = <span class="hljs-number">5</span>;</span>
 <span class="code-line" data-line="6">  <span class="hljs-built_in">int</span> result = factorial(n);</span>
-<span class="code-line" data-line="7">  <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;Factorial of &lt;span class=&quot;katex&quot;&gt;&lt;span class=&quot;katex-mathml&quot;&gt;&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mi&gt;s&lt;/mi&gt;&lt;/mrow&gt;&lt;annotation encoding=&quot;application/x-tex&quot;&gt;n is &lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class=&quot;katex-html&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:0.6595em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;ni&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;s&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;result&#x27;</span>);</span>
+<span class="code-line" data-line="7">  <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;Factorial of <span class="hljs-subst">$n</span> is <span class="hljs-subst">$result</span>&#x27;</span>);</span>
 <span class="code-line" data-line="8">  </span>
 <span class="code-line" data-line="9">  <span class="hljs-comment">// Fibonacci sequence</span></span>
 <span class="code-line" data-line="10">  <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;First 10 Fibonacci numbers:&#x27;</span>);</span>
 <span class="code-line" data-line="11">  <span class="hljs-keyword">for</span> (<span class="hljs-built_in">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; i++) {</span>
-<span class="code-line" data-line="12">    <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;F(&lt;span class=&quot;katex&quot;&gt;&lt;span class=&quot;katex-mathml&quot;&gt;&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;/mrow&gt;&lt;annotation encoding=&quot;application/x-tex&quot;&gt;i) = &lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class=&quot;katex-html&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:1em;vertical-align:-0.25em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;mclose&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2778em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mrel&quot;&gt;=&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;{fibonacci(i)}&#x27;</span>);</span>
+<span class="code-line" data-line="12">    <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;F(<span class="hljs-subst">$i</span>) = <span class="hljs-subst">${fibonacci(i)}</span>&#x27;</span>);</span>
 <span class="code-line" data-line="13">  }</span>
 <span class="code-line" data-line="14">}</span>
 <span class="code-line" data-line="15"> </span>
@@ -223,7 +225,7 @@
 <p>You can also reference specific line ranges. Here are just lines 5-8 from the same file:</p>
 <pre class="code-block code-with-lines"><code class="hljs language-dart" data-start="5" style="counter-reset: line-number 4;"><span class="code-line" data-line="5">  <span class="hljs-built_in">int</span> n = <span class="hljs-number">5</span>;</span>
 <span class="code-line" data-line="6">  <span class="hljs-built_in">int</span> result = factorial(n);</span>
-<span class="code-line" data-line="7">  <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;Factorial of &lt;span class=&quot;katex&quot;&gt;&lt;span class=&quot;katex-mathml&quot;&gt;&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mi&gt;s&lt;/mi&gt;&lt;/mrow&gt;&lt;annotation encoding=&quot;application/x-tex&quot;&gt;n is &lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class=&quot;katex-html&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:0.6595em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;ni&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;s&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;result&#x27;</span>);</span>
+<span class="code-line" data-line="7">  <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;Factorial of <span class="hljs-subst">$n</span> is <span class="hljs-subst">$result</span>&#x27;</span>);</span>
 <span class="code-line" data-line="8">  </span>
 </code></pre>
 <h2>Syntax Highlighting</h2>
