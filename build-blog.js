@@ -34,6 +34,7 @@ renderer.code = function (code, infostring, escaped) {
   let lineMap = null;
   let highlightLines = null;
   let highlightColor = null;
+  let sourceUrl = null;
 
   if (info) {
     const firstTokenMatch = info.match(/^(\S+)/);
@@ -51,9 +52,18 @@ renderer.code = function (code, infostring, escaped) {
       filename = fileMatch[1];
     }
 
-    const aliasMatch = info.match(/alias\s*=\s*([^,}\s]+)/i);
+    // Alias, if present, overrides the displayed filename. We expect it to be
+    // quoted, e.g. alias="bloc/hello.dart".
+    const aliasMatch = info.match(/alias\s*=\s*"(.*?)"/i);
     if (aliasMatch) {
       filename = aliasMatch[1];
+    }
+
+    // Optional source URL for the filename tab, expected in quotes to allow
+    // characters like ':' – e.g. sourceUrl="https://example.com/file".
+    const sourceMatch = info.match(/sourceUrl\s*=\s*"(.*?)"/i);
+    if (sourceMatch) {
+      sourceUrl = sourceMatch[1];
     }
 
     const lineMapMatch = info.match(/lineMap\s*=\s*([^,}\s]+)/i);
@@ -175,7 +185,11 @@ renderer.code = function (code, infostring, escaped) {
 
   const hasFilename = !!filename;
   const filenameHtml = hasFilename
-    ? `<div class="code-filename">${escapeHtml(filename)}</div>`
+    ? (
+      sourceUrl
+        ? `<div class="code-filename"><a href="${escapeHtml(sourceUrl)}" class="code-filename-link" target="_blank" rel="noopener noreferrer">${escapeHtml(filename)}</a></div>`
+        : `<div class="code-filename">${escapeHtml(filename)}</div>`
+    )
     : '';
 
   // Important: do NOT append a trailing newline inside <code>, because with
@@ -276,54 +290,65 @@ function processLatex(markdown) {
 // with multiple ranges: {{code:path/to/file.ext:5-8,16-20}}
 function processCodeInjection(markdown, blogDir) {
   return markdown.replace(/\{\{code:([^}]+)\}\}/g, (match, codeSpec) => {
-    const parts = codeSpec.split(':');
-    const filePath = parts[0].trim();
+    // Split into "file path" and "options" (ranges + metadata). Everything
+    // after the first ":" is treated as options so values (like URLs) can
+    // safely contain ":" characters.
+    const firstColon = codeSpec.indexOf(':');
+    const filePath = (firstColon === -1
+      ? codeSpec
+      : codeSpec.slice(0, firstColon)
+    ).trim();
+    const optionsPart = firstColon === -1
+      ? ''
+      : codeSpec.slice(firstColon + 1);
 
     const lineRanges = [];
     let explicitStart = null;
     let highlightSpec = null;
     let highlightColorSpec = null;
     let aliasSpec = null;
+    let sourceUrlSpec = null;
 
-    for (let i = 1; i < parts.length; i++) {
-      const token = parts[i].trim();
-      if (!token) continue;
+    if (optionsPart && optionsPart.trim()) {
+      const opts = optionsPart.trim();
 
-      // Support multiple ranges separated by commas in a single token
-      const subTokens = token.split(',').map(t => t.trim()).filter(Boolean);
-      for (const sub of subTokens) {
-        if (/^\d+\s*-\s*\d+$/.test(sub)) {
-          lineRanges.push(sub);
-        } else {
-          const startMatch = sub.match(/^start\s*=\s*(\d+)$/i);
-          if (startMatch) {
-            explicitStart = parseInt(startMatch[1], 10);
-            continue;
+      // 1) Extract base line ranges ONLY from the section before any
+      //    key=value metadata (start=, highlight=, etc.) so that ranges
+      //    inside highlight specs aren't treated as injection ranges.
+      const metaKeyIndex = opts.search(/\b(start|highlight|highlightColor|alias|sourceUrl)\s*=/i);
+      const rangesPart = metaKeyIndex === -1 ? opts : opts.slice(0, metaKeyIndex);
+
+      const rangeRegex = /\b(\d+\s*-\s*\d+)\b/g;
+      let m;
+      while ((m = rangeRegex.exec(rangesPart)) !== null) {
+        lineRanges.push(m[1]);
+      }
+
+      // 2) Extract key=value metadata from the whole options string.
+      const optionRegex = /\b(start|highlight|highlightColor|alias|sourceUrl)\s*=\s*("[^"]*"|'[^']*'|[^,]+)/gi;
+      while ((m = optionRegex.exec(opts)) !== null) {
+        const key = m[1].toLowerCase();
+        let value = m[2].trim();
+
+        // Strip optional surrounding quotes
+        if ((value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
+
+        if (key === 'start') {
+          const n = parseInt(value, 10);
+          if (!Number.isNaN(n)) {
+            explicitStart = n;
           }
-
-          const highlightMatch = sub.match(/^highlight\s*=\s*(.+)$/i);
-          if (highlightMatch) {
-            highlightSpec = highlightMatch[1].trim();
-            continue;
-          }
-
-          const highlightColorMatch = sub.match(/^highlightColor\s*=\s*(.+)$/i);
-          if (highlightColorMatch) {
-            highlightColorSpec = highlightColorMatch[1].trim();
-            continue;
-          }
-
-          const aliasMatch = sub.match(/^alias\s*=\s*(.+)$/i);
-          if (aliasMatch) {
-            let raw = aliasMatch[1].trim();
-            // Strip optional surrounding quotes, e.g. alias="hello.dart"
-            if ((raw.startsWith('"') && raw.endsWith('"')) ||
-              (raw.startsWith("'") && raw.endsWith("'"))) {
-              raw = raw.slice(1, -1);
-            }
-            aliasSpec = raw;
-            continue;
-          }
+        } else if (key === 'highlight') {
+          highlightSpec = value;
+        } else if (key === 'highlightcolor') {
+          highlightColorSpec = value;
+        } else if (key === 'alias') {
+          aliasSpec = value;
+        } else if (key === 'sourceurl') {
+          sourceUrlSpec = value;
         }
       }
     }
@@ -419,10 +444,13 @@ function processCodeInjection(markdown, blogDir) {
         metaParts.push(`highlight=${highlightSpec}`);
       }
       if (highlightColorSpec) {
-        metaParts.push(`highlightColor=${highlightColorSpec}`);
+        metaParts.push(`highlightColor="${highlightColorSpec}"`);
       }
       if (aliasSpec) {
-        metaParts.push(`alias=${aliasSpec}`);
+        metaParts.push(`alias="${aliasSpec}"`);
+      }
+      if (sourceUrlSpec) {
+        metaParts.push(`sourceUrl="${sourceUrlSpec}"`);
       }
 
       const meta = metaParts.length ? ` {${metaParts.join(', ')}}` : '';
@@ -579,6 +607,16 @@ function generateBlogHTML(title, content, date, blogPath) {
       border-top-left-radius: 6px;
       border-top-right-radius: 6px;
       pointer-events: none;
+    }
+
+    .blog-content .code-block-wrapper .code-filename .code-filename-link {
+      color: inherit;
+      text-decoration: none;
+      pointer-events: auto; /* allow clicking the link while parent is non-interactive */
+    }
+
+    .blog-content .code-block-wrapper .code-filename .code-filename-link:hover {
+      text-decoration: underline;
     }
 
     .blog-content pre.code-with-lines .code-line {
