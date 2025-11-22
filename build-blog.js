@@ -213,10 +213,21 @@ renderer.code = function (code, infostring, escaped) {
   ].filter(Boolean).join(' ');
 
   const hasFilename = !!filename;
+  let faviconHtml = '';
+  if (sourceUrl) {
+    try {
+      const url = new URL(sourceUrl);
+      const faviconUrl = `${url.origin}/favicon.ico`;
+      faviconHtml = `<img src="${escapeHtml(faviconUrl)}" alt="" class="code-filename-favicon">`;
+    } catch (e) {
+      // If URL parsing fails, skip favicon.
+    }
+  }
+
   const filenameHtml = hasFilename
     ? (
       sourceUrl
-        ? `<div class="code-filename"><a href="${escapeHtml(sourceUrl)}" class="code-filename-link" target="_blank" rel="noopener noreferrer">${escapeHtml(filename)}</a></div>`
+        ? `<div class="code-filename code-filename--linked"><a href="${escapeHtml(sourceUrl)}" class="code-filename-link" target="_blank" rel="noopener noreferrer">${faviconHtml}${escapeHtml(filename)}</a></div>`
         : `<div class="code-filename">${escapeHtml(filename)}</div>`
     )
     : '';
@@ -625,14 +636,33 @@ function generateBlogHTML(title, content, date, blogPath) {
       pointer-events: none;
     }
 
+    .blog-content .code-block-wrapper .code-filename.code-filename--linked .code-filename-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3em;
+    }
+
     .blog-content .code-block-wrapper .code-filename .code-filename-link {
       color: inherit;
       text-decoration: none;
       pointer-events: auto; /* allow clicking the link while parent is non-interactive */
     }
 
+    .blog-content .code-block-wrapper .code-filename-favicon {
+      width: 0.8em;
+      height: 0.8em;
+      margin-right: 0;
+      object-fit: contain;
+      vertical-align: middle;
+      opacity: 0.8;
+    }
+
     .blog-content .code-block-wrapper .code-filename .code-filename-link:hover {
       text-decoration: underline;
+    }
+
+    .blog-content .code-block-wrapper .code-filename .code-filename-link:hover .code-filename-favicon {
+      opacity: 0.55;
     }
 
     .blog-content pre.code-with-lines .code-line {
@@ -691,7 +721,6 @@ function generateBlogHTML(title, content, date, blogPath) {
       max-width: 100%;
       height: auto;
       display: block;
-      margin: 1.5rem auto;
     }
     
     .blog-content blockquote {

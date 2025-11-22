@@ -35,7 +35,7 @@ You can also reference specific line ranges. Here are just lines 5-8 and 16-20 f
     "@type": "code-block",
     "path": "example.dart",
     "alias": "bloc/hello.dart",
-    "sourceUrl": "https://api.flutter.dev/flutter/material/Scaffold-class.html",
+    "sourceUrl": "https://github.com/dart-frog-dev/dart_frog",
     "lines": [
       { "from": 5, "to": 8 },
       { "from": 16, "to": 20 }
