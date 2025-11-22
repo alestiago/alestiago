@@ -31,6 +31,7 @@ renderer.code = function (code, infostring, escaped) {
   let lang = '';
   let startLine = 1;
   let filename = '';
+  let lineMap = null;
 
   if (info) {
     const firstTokenMatch = info.match(/^(\S+)/);
@@ -47,25 +48,64 @@ renderer.code = function (code, infostring, escaped) {
     if (fileMatch) {
       filename = fileMatch[1];
     }
+
+    const lineMapMatch = info.match(/lineMap\s*=\s*([^,}\s]+)/i);
+    if (lineMapMatch) {
+      lineMap = lineMapMatch[1]
+        .split('|')
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(s => parseInt(s, 10))
+        .filter(n => !Number.isNaN(n));
+    }
   }
 
-  let highlighted = code;
-  if (lang) {
-    highlighted = highlightCode(code, lang);
-  } else {
-    highlighted = escapeHtml(code);
-  }
+  // Work with raw lines so we can support special "ellipsis" separator lines.
+  // We use a sentinel value that processCodeInjection can insert between
+  // disjoint line ranges, and render it as a grey "..." without a line number.
+  const rawLines = code.replace(/\n$/, '').split('\n');
 
-  // Split into lines, keeping empty ones to preserve structure.
-  // Then trim any trailing empty/whitespace-only lines so we don't end up
-  // with a large blank area at the bottom of the code block.
-  const lines = highlighted.replace(/\n$/, '').split('\n');
-  while (lines.length > 0 && lines[lines.length - 1].trim() === '') {
-    lines.pop();
-  }
-  const lineHtml = lines.map((line, idx) => {
-    const lineNumber = startLine + idx;
-    const safeLine = line === '' ? ' ' : line;
+  const ELLIPSIS_SENTINEL = '__CODE_ELLIPSIS__';
+
+  const lineInfos = rawLines.map(line => ({
+    raw: line,
+    isEllipsis: line.trim() === ELLIPSIS_SENTINEL
+  }));
+
+  // Highlight each non-ellipsis line individually so syntax highlighting
+  // still works even when we insert special ellipsis separator lines.
+  const highlightedLines = lineInfos.map(info => {
+    if (info.isEllipsis) {
+      // No content on the code side; the gutter will show "..." instead.
+      return '';
+    }
+    if (lang) {
+      return highlightCode(info.raw, lang);
+    }
+    return escapeHtml(info.raw);
+  });
+
+  let lineMapIndex = 0;
+
+  const lineHtml = highlightedLines.map((html, idx) => {
+    const { isEllipsis } = lineInfos[idx];
+    let lineNumber;
+
+    if (lineMap && !isEllipsis && lineMapIndex < lineMap.length) {
+      // Use explicit mapping when provided (from code injection with ranges).
+      lineNumber = lineMap[lineMapIndex++];
+    } else {
+      // Fallback: simple sequential numbering based on startLine.
+      lineNumber = startLine + idx;
+    }
+
+    if (isEllipsis) {
+      // Ellipsis line: no visible code content, but the line-number gutter
+      // will render "..." instead of a number via CSS.
+      return `<span class="code-line code-ellipsis" data-line="${lineNumber}"> </span>`;
+    }
+
+    const safeLine = html === '' ? ' ' : html;
     return `<span class="code-line" data-line="${lineNumber}">${safeLine}</span>`;
   }).join('');
 
@@ -175,23 +215,30 @@ function processLatex(markdown) {
   return processed;
 }
 
-// Process code injection syntax: {{code:path/to/file.ext:start-end}}
+// Process code injection syntax: {{code:path/to/file.ext:5-8}} or
+// with multiple ranges: {{code:path/to/file.ext:5-8,16-20}}
 function processCodeInjection(markdown, blogDir) {
   return markdown.replace(/\{\{code:([^}]+)\}\}/g, (match, codeSpec) => {
     const parts = codeSpec.split(':');
     const filePath = parts[0].trim();
 
-    let lineRange = null;
+    const lineRanges = [];
     let explicitStart = null;
 
     for (let i = 1; i < parts.length; i++) {
       const token = parts[i].trim();
-      if (/^\d+\s*-\s*\d+$/.test(token)) {
-        lineRange = token;
-      } else {
-        const startMatch = token.match(/^start\s*=\s*(\d+)$/i);
-        if (startMatch) {
-          explicitStart = parseInt(startMatch[1], 10);
+      if (!token) continue;
+
+      // Support multiple ranges separated by commas in a single token
+      const subTokens = token.split(',').map(t => t.trim()).filter(Boolean);
+      for (const sub of subTokens) {
+        if (/^\d+\s*-\s*\d+$/.test(sub)) {
+          lineRanges.push(sub);
+        } else {
+          const startMatch = sub.match(/^start\s*=\s*(\d+)$/i);
+          if (startMatch) {
+            explicitStart = parseInt(startMatch[1], 10);
+          }
         }
       }
     }
@@ -200,14 +247,42 @@ function processCodeInjection(markdown, blogDir) {
       const fullPath = path.join(blogDir, filePath);
       let content = fs.readFileSync(fullPath, 'utf-8');
 
-      let inferredStart = 1;
+      const allLines = content.split('\n');
 
-      // Extract line range if specified
-      if (lineRange) {
-        const [start, end] = lineRange.split('-').map(n => parseInt(n.trim()));
-        const lines = content.split('\n');
-        content = lines.slice(start - 1, end).join('\n');
-        inferredStart = start;
+      // Extract line range(s) if specified
+      let inferredStart = 1;
+      let lineMapNumbers = null;
+      if (lineRanges.length > 0) {
+        const segments = [];
+        lineMapNumbers = [];
+
+        for (let idx = 0; idx < lineRanges.length; idx++) {
+          const range = lineRanges[idx];
+          const [start, end] = range.split('-').map(n => parseInt(n.trim(), 10));
+          if (Number.isNaN(start) || Number.isNaN(end)) {
+            continue;
+          }
+
+          const segment = allLines.slice(start - 1, end);
+          if (segment.length > 0) {
+            if (segments.length > 0) {
+              // Sentinel line that the renderer will turn into a grey separator
+              segments.push('__CODE_ELLIPSIS__');
+            }
+            segments.push(...segment);
+
+            // Record the original line numbers for each emitted line
+            for (let n = start; n <= end; n++) {
+              lineMapNumbers.push(n);
+            }
+          }
+
+          if (idx === 0) {
+            inferredStart = start;
+          }
+        }
+
+        content = segments.join('\n');
       }
 
       // Detect file extension for syntax highlighting
@@ -247,6 +322,12 @@ function processCodeInjection(markdown, blogDir) {
       const baseName = path.basename(filePath);
       if (baseName) {
         metaParts.push(`file=${baseName}`);
+      }
+
+      if (lineMapNumbers && lineMapNumbers.length > 0) {
+        // Encode the per-line mapping so the renderer can show correct
+        // original line numbers even across disjoint ranges.
+        metaParts.push(`lineMap=${lineMapNumbers.join('|')}`);
       }
 
       const meta = metaParts.length ? ` {${metaParts.join(', ')}}` : '';
@@ -420,11 +501,25 @@ function generateBlogHTML(title, content, date, blogPath) {
       padding-right: 0.75em;
       text-align: right;
       color: #999;
-      content: counter(line-number);
-      counter-increment: line-number;
+      content: attr(data-line);
       user-select: none;
       -webkit-user-select: none;
       -moz-user-select: none;
+    }
+
+    .blog-content pre.code-with-lines .code-line.code-ellipsis {
+      background-color: #f0f1f3;
+      color: #999;
+      font-style: italic;
+      line-height: 2em;
+      margin-left: -3.25em;  /* extend background into gutter area */
+      padding-left: 3.5em;   /* keep code text aligned with other lines */
+    }
+
+    .blog-content pre.code-with-lines .code-line.code-ellipsis::before {
+      color: #999;
+      content: '';
+      counter-increment: none;
     }
     
   
