@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to My Blog - Alejandro Santiago</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      line-height: 1.6;
+      padding: 2rem;
+      max-width: 720px;
+      margin: auto;
+      color: #111;
+    }
+    
+    .blog-nav {
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+    
+    .blog-nav a {
+      color: #0366d6;
+      text-decoration: none;
+      margin-right: 1rem;
+    }
+    
+    .blog-nav a:hover {
+      text-decoration: underline;
+    }
+    
+    .blog-header {
+      margin-bottom: 2rem;
+    }
+    
+    .blog-header h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+      color: #111;
+    }
+    
+    .blog-date {
+      color: #555;
+      font-size: 0.9rem;
+      margin: 0.6rem 0;
+    }
+    
+    .blog-content h1 {
+      font-size: 1.5rem;
+      margin-top: 2rem;
+      margin-bottom: 0.5rem;
+      color: #111;
+    }
+    
+    .blog-content h2 {
+      font-size: 1.25rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #111;
+    }
+    
+    .blog-content h3 {
+      font-size: 1.1rem;
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: #111;
+    }
+    
+    .blog-content p {
+      margin: 0.6rem 0;
+    }
+    
+    .blog-content pre {
+      background-color: #f6f8fa;
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-size: 0.9em;
+    }
+    
+    .blog-content code {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    }
+    
+    .blog-content p code {
+      background-color: #f6f8fa;
+      padding: 0.2em 0.4em;
+      border-radius: 3px;
+      font-size: 0.9em;
+      border: 1px solid #e1e4e8;
+    }
+
+    /* Line-numbered code blocks */
+    .blog-content pre.code-with-lines {
+      position: relative;
+      padding-left: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    .blog-content pre.code-with-lines code {
+      display: block;
+      white-space: pre;
+      padding-left: 3.25em; /* space for line-number gutter entirely inside the border */
+    }
+
+    .blog-content pre.code-with-lines .code-line {
+      display: block;
+      position: relative;
+      padding-left: 0.25em;
+    }
+
+    .blog-content pre.code-with-lines .code-line::before {
+      position: absolute;
+      left: 0;
+      width: 2.5em;
+      margin-left: -3.25em;
+      padding-right: 0.75em;
+      text-align: right;
+      color: #999;
+      content: counter(line-number);
+      counter-increment: line-number;
+    }
+    
+    .blog-content img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 1.5rem auto;
+    }
+    
+    .blog-content blockquote {
+      border-left: 3px solid #ddd;
+      margin: 1rem 0;
+      padding-left: 1rem;
+      color: #555;
+    }
+    
+    .blog-content a {
+      color: #0366d6;
+    }
+    
+    .blog-content a:hover {
+      text-decoration: underline;
+    }
+    
+    .blog-content ul, .blog-content ol {
+      margin: 0.6rem 0;
+      padding-left: 2rem;
+    }
+    
+    .blog-content li {
+      margin: 0.3rem 0;
+    }
+    
+    .katex-display {
+      overflow-x: auto;
+      overflow-y: hidden;
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="blog-nav">
+    <a href="../../index.html">← Home</a>
+    <a href="../index.html">← Blog Index</a>
+  </div>
+  
+  <div class="blog-header">
+    <h1>Welcome to My Blog</h1>
+    <div class="blog-date">November 21, 2025</div>
+  </div>
+  
+  <div class="blog-content">
+    <h1>Welcome to My Blog</h1>
+<p>This is an example blog post demonstrating all the features of the markdown blogging system.</p>
+<h2>Writing in Markdown</h2>
+<p>You can write using standard markdown syntax:</p>
+<ul>
+<li><strong>Bold text</strong></li>
+<li><em>Italic text</em></li>
+<li><code>inline code</code></li>
+<li><a href="https://example.com">Links</a></li>
+</ul>
+<h3>Ordered Lists</h3>
+<ol>
+<li>First item</li>
+<li>Second item</li>
+<li>Third item</li>
+</ol>
+<h2>Code Injection</h2>
+<p>One of the coolest features is the ability to reference code files directly. Here&#39;s an example Dart file:</p>
+<pre class="code-block code-with-lines"><code class="hljs language-dart" data-start="1" style="counter-reset: line-number 0;"><span class="code-line" data-line="1"><span class="hljs-keyword">void</span> main() {</span>
+<span class="code-line" data-line="2">  <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;Hello from Dart!&#x27;</span>);</span>
+<span class="code-line" data-line="3">  </span>
+<span class="code-line" data-line="4">  <span class="hljs-comment">// Calculate factorial</span></span>
+<span class="code-line" data-line="5">  <span class="hljs-built_in">int</span> n = <span class="hljs-number">5</span>;</span>
+<span class="code-line" data-line="6">  <span class="hljs-built_in">int</span> result = factorial(n);</span>
+<span class="code-line" data-line="7">  <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;Factorial of &lt;span class=&quot;katex&quot;&gt;&lt;span class=&quot;katex-mathml&quot;&gt;&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mi&gt;s&lt;/mi&gt;&lt;/mrow&gt;&lt;annotation encoding=&quot;application/x-tex&quot;&gt;n is &lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class=&quot;katex-html&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:0.6595em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;ni&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;s&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;result&#x27;</span>);</span>
+<span class="code-line" data-line="8">  </span>
+<span class="code-line" data-line="9">  <span class="hljs-comment">// Fibonacci sequence</span></span>
+<span class="code-line" data-line="10">  <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;First 10 Fibonacci numbers:&#x27;</span>);</span>
+<span class="code-line" data-line="11">  <span class="hljs-keyword">for</span> (<span class="hljs-built_in">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; i++) {</span>
+<span class="code-line" data-line="12">    <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;F(&lt;span class=&quot;katex&quot;&gt;&lt;span class=&quot;katex-mathml&quot;&gt;&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;/mrow&gt;&lt;annotation encoding=&quot;application/x-tex&quot;&gt;i) = &lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class=&quot;katex-html&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:1em;vertical-align:-0.25em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;mclose&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2778em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mrel&quot;&gt;=&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;{fibonacci(i)}&#x27;</span>);</span>
+<span class="code-line" data-line="13">  }</span>
+<span class="code-line" data-line="14">}</span>
+<span class="code-line" data-line="15"> </span>
+<span class="code-line" data-line="16"><span class="hljs-built_in">int</span> factorial(<span class="hljs-built_in">int</span> n) {</span>
+<span class="code-line" data-line="17">  <span class="hljs-keyword">if</span> (n &lt;= <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;</span>
+<span class="code-line" data-line="18">  <span class="hljs-keyword">return</span> n * factorial(n - <span class="hljs-number">1</span>);</span>
+<span class="code-line" data-line="19">}</span>
+<span class="code-line" data-line="20"> </span>
+<span class="code-line" data-line="21"><span class="hljs-built_in">int</span> fibonacci(<span class="hljs-built_in">int</span> n) {</span>
+<span class="code-line" data-line="22">  <span class="hljs-keyword">if</span> (n &lt;= <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> n;</span>
+<span class="code-line" data-line="23">  <span class="hljs-keyword">return</span> fibonacci(n - <span class="hljs-number">1</span>) + fibonacci(n - <span class="hljs-number">2</span>);</span>
+<span class="code-line" data-line="24">}</span>
+<span class="code-line" data-line="25"> </span>
+</code></pre>
+<p>You can also reference specific line ranges. Here are just lines 5-8 from the same file:</p>
+<pre class="code-block code-with-lines"><code class="hljs language-dart" data-start="5" style="counter-reset: line-number 4;"><span class="code-line" data-line="5">  <span class="hljs-built_in">int</span> n = <span class="hljs-number">5</span>;</span>
+<span class="code-line" data-line="6">  <span class="hljs-built_in">int</span> result = factorial(n);</span>
+<span class="code-line" data-line="7">  <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;Factorial of &lt;span class=&quot;katex&quot;&gt;&lt;span class=&quot;katex-mathml&quot;&gt;&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mi&gt;s&lt;/mi&gt;&lt;/mrow&gt;&lt;annotation encoding=&quot;application/x-tex&quot;&gt;n is &lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class=&quot;katex-html&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:0.6595em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;ni&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;s&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;result&#x27;</span>);</span>
+<span class="code-line" data-line="8">  </span>
+</code></pre>
+<h2>Syntax Highlighting</h2>
+<p>You can also write code directly in markdown with syntax highlighting:</p>
+<pre class="code-block code-with-lines"><code class="hljs language-javascript" data-start="1" style="counter-reset: line-number 0;"><span class="code-line" data-line="1"><span class="hljs-keyword">function</span> <span class="hljs-title function_">fibonacci</span>(<span class="hljs-params">n</span>) {</span>
+<span class="code-line" data-line="2">  <span class="hljs-keyword">if</span> (n &lt;= <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> n;</span>
+<span class="code-line" data-line="3">  <span class="hljs-keyword">return</span> <span class="hljs-title function_">fibonacci</span>(n - <span class="hljs-number">1</span>) + <span class="hljs-title function_">fibonacci</span>(n - <span class="hljs-number">2</span>);</span>
+<span class="code-line" data-line="4">}</span>
+<span class="code-line" data-line="5"> </span>
+<span class="code-line" data-line="6"><span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">fibonacci</span>(<span class="hljs-number">10</span>));</span>
+</code></pre>
+<pre class="code-block code-with-lines"><code class="hljs language-python" data-start="10" style="counter-reset: line-number 9;"><span class="code-line" data-line="10"><span class="hljs-keyword">def</span> <span class="hljs-title function_">quicksort</span>(<span class="hljs-params">arr</span>):</span>
+<span class="code-line" data-line="11">    <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(arr) &lt;= <span class="hljs-number">1</span>:</span>
+<span class="code-line" data-line="12">        <span class="hljs-keyword">return</span> arr</span>
+<span class="code-line" data-line="13">    pivot = arr[<span class="hljs-built_in">len</span>(arr) // <span class="hljs-number">2</span>]</span>
+<span class="code-line" data-line="14">    left = [x <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> arr <span class="hljs-keyword">if</span> x &lt; pivot]</span>
+<span class="code-line" data-line="15">    middle = [x <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> arr <span class="hljs-keyword">if</span> x == pivot]</span>
+<span class="code-line" data-line="16">    right = [x <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> arr <span class="hljs-keyword">if</span> x &gt; pivot]</span>
+<span class="code-line" data-line="17">    <span class="hljs-keyword">return</span> quicksort(left) + middle + quicksort(right)</span>
+<span class="code-line" data-line="18"> </span>
+<span class="code-line" data-line="19"><span class="hljs-built_in">print</span>(quicksort([<span class="hljs-number">3</span>, <span class="hljs-number">6</span>, <span class="hljs-number">8</span>, <span class="hljs-number">10</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>]))</span>
+</code></pre>
+<h2>LaTeX Math Support</h2>
+<p>You can write inline math like this: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">E = mc^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">E</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord mathnormal">m</span><span class="mord"><span class="mord mathnormal">c</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> or using dollar signs: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">a^2 + b^2 = c^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">c</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span>.</p>
+<p>You can also write block equations:</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msubsup><mo>∫</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow><mi mathvariant="normal">∞</mi></msubsup><msup><mi>e</mi><mrow><mo>−</mo><msup><mi>x</mi><mn>2</mn></msup></mrow></msup><mi>d</mi><mi>x</mi><mo>=</mo><msqrt><mi>π</mi></msqrt></mrow><annotation encoding="application/x-tex"><br>\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}<br></annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.3846em;vertical-align:-0.9703em;"></span><span class="mop"><span class="mop op-symbol large-op" style="margin-right:0.44445em;position:relative;top:-0.0011em;">∫</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4143em;"><span style="top:-1.7881em;margin-left:-0.4445em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">∞</span></span></span></span><span style="top:-3.8129em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">∞</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.9703em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:1.0369em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight"><span class="mord mathnormal mtight">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8913em;"><span style="top:-2.931em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="mord mathnormal">d</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.04em;vertical-align:-0.1908em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8492em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord mathnormal" style="margin-right:0.03588em;">π</span></span></span><span style="top:-2.8092em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1908em;"><span></span></span></span></span></span></span></span></span></span></p>
+<p>Or using double dollar signs:</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>i</mi><mo>=</mo><mfrac><mrow><mi>n</mi><mo stretchy="false">(</mo><mi>n</mi><mo>+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow><mn>2</mn></mfrac></mrow><annotation encoding="application/x-tex"><br>\sum_{i=1}^{n} i = \frac{n(n+1)}{2}<br></annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.9291em;vertical-align:-1.2777em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6514em;"><span style="top:-1.8723em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2777em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">i</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.113em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">n</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">1</span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
+<p>Here&#39;s the quadratic formula:</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mo>−</mo><mi>b</mi><mo>±</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex"><br>x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}<br></annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.2764em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.5904em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span><span class="mord mathnormal">a</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">−</span><span class="mord mathnormal">b</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">±</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9134em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">4</span><span class="mord mathnormal">a</span><span class="mord mathnormal">c</span></span></span><span style="top:-2.8734em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1266em;"><span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
+<h2>Images</h2>
+<p>You can include images in your posts:</p>
+<p><img src="../../assets/pic.png" alt="Example Image"></p>
+<h2>Blockquotes</h2>
+<blockquote>
+<p>&quot;The only way to do great work is to love what you do.&quot;</p>
+<p>— Steve Jobs</p>
+</blockquote>
+<h2>Conclusion</h2>
+<p>This blogging system gives you:</p>
+<ul>
+<li>✅ Full markdown support</li>
+<li>✅ Code injection from files</li>
+<li>✅ Syntax highlighting</li>
+<li>✅ LaTeX math rendering</li>
+<li>✅ Images and links</li>
+<li>✅ Clean, responsive design</li>
+</ul>
+<p>Happy blogging! 🎉</p>
+
+  </div>
+</body>
+</html>
