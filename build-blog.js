@@ -30,6 +30,7 @@ renderer.code = function (code, infostring, escaped) {
   const info = (infostring || '').trim();
   let lang = '';
   let startLine = 1;
+  let filename = '';
 
   if (info) {
     const firstTokenMatch = info.match(/^(\S+)/);
@@ -40,6 +41,11 @@ renderer.code = function (code, infostring, escaped) {
     const startMatch = info.match(/start\s*=\s*(\d+)/i);
     if (startMatch) {
       startLine = parseInt(startMatch[1], 10) || 1;
+    }
+
+    const fileMatch = info.match(/file\s*=\s*([^,}\s]+)/i);
+    if (fileMatch) {
+      filename = fileMatch[1];
     }
   }
 
@@ -70,10 +76,21 @@ renderer.code = function (code, infostring, escaped) {
 
   const counterStart = Math.max(startLine - 1, 0);
 
+  const hasFilename = !!filename;
+  const filenameHtml = hasFilename
+    ? `<div class="code-filename">${escapeHtml(filename)}</div>`
+    : '';
+
   // Important: do NOT append a trailing newline inside <code>, because with
   // white-space: pre that would render as an extra blank line after the last
-  // code line. We only keep the newline after </pre> for nicer HTML source.
-  return `<pre class="code-block code-with-lines"><code class="${classes}" data-start="${startLine}" style="counter-reset: line-number ${counterStart};">${lineHtml}</code></pre>\n`;
+  // code line.
+  //
+  // We wrap the <pre> in a container so the filename "tab" can sit just above
+  // the code block border without being clipped by the pre's overflow rules.
+  const wrapperClass = hasFilename
+    ? 'code-block-wrapper has-filename'
+    : 'code-block-wrapper';
+  return `<div class="${wrapperClass}">${filenameHtml}<pre class="code-block code-with-lines"><code class="${classes}" data-start="${startLine}" style="counter-reset: line-number ${counterStart};">${lineHtml}</code></pre></div>\n`;
 };
 
 // Ensure Dart is registered for syntax highlighting
@@ -223,9 +240,17 @@ function processCodeInjection(markdown, blogDir) {
         ? explicitStart
         : inferredStart;
 
-      const infoString = startForNumbering !== 1
-        ? `${lang} {start=${startForNumbering}}`
-        : lang;
+      const metaParts = [];
+      if (startForNumbering !== 1) {
+        metaParts.push(`start=${startForNumbering}`);
+      }
+      const baseName = path.basename(filePath);
+      if (baseName) {
+        metaParts.push(`file=${baseName}`);
+      }
+
+      const meta = metaParts.length ? ` {${metaParts.join(', ')}}` : '';
+      const infoString = `${lang}${meta}`;
 
       // Return as markdown code block with optional starting line metadata
       return '```' + infoString + '\n' + content + '\n```';
@@ -342,11 +367,21 @@ function generateBlogHTML(title, content, date, blogPath) {
     }
 
     /* Line-numbered code blocks */
-    .blog-content pre.code-with-lines {
+    .blog-content .code-block-wrapper {
+      position: relative;
+      margin: 1rem 0;
+    }
+
+    .blog-content .code-block-wrapper pre.code-with-lines {
       position: relative;
       padding: 0;
       overflow-x: auto;
       overflow-y: hidden;
+      margin: 0; /* wrapper handles vertical spacing */
+    }
+
+    .blog-content .code-block-wrapper.has-filename pre.code-with-lines {
+      border-top-left-radius: 0; /* let the filename tab own this corner when present */
     }
 
     .blog-content pre.code-with-lines code {
@@ -354,6 +389,20 @@ function generateBlogHTML(title, content, date, blogPath) {
       white-space: pre;
       padding: 1em 0 1em 3.25em; /* vertical padding + left gutter */
       line-height: 1.5em;
+    }
+
+    .blog-content .code-block-wrapper .code-filename {
+      display: inline-block;
+      margin: 0 0 -1px 0;  /* visually connect with the pre's top border */
+      padding: 0.1em 0.6em;
+      font-size: 0.75em;
+      color: #666;
+      background-color: #f6f8fa;
+      border: 1px solid #e1e4e8;
+      border-bottom: none;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+      pointer-events: none;
     }
 
     .blog-content pre.code-with-lines .code-line {
