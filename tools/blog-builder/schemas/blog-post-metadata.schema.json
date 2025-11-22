@@ -49,6 +49,14 @@
             "type": "integer",
             "minimum": 1,
             "description": "Optional estimated reading time for the blog post, in whole minutes. When provided and positive, it is displayed as \"N min read\" on the post page and blog index."
+        },
+        "tags": {
+            "type": "array",
+            "description": "Optional list of tags for the blog post. When provided, each tag is rendered as a pill on the post page and on the blog index, and can be used for informal categorization (e.g. \"dart\", \"bloc\", \"testing\").",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
         }
     },
     "required": [

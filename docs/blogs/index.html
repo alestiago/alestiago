@@ -32,7 +32,7 @@
     }
     
     .blog-header {
-      margin-bottom: 2rem;
+      margin-bottom: 0;
     }
     
     .blog-header h1 {
@@ -99,6 +99,24 @@
     .post-date-separator {
       color: #ccc;
     }
+
+    .post-tags {
+      margin: 0.3rem 0 0.35rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .post-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.08rem 0.45rem;
+      border-radius: 9999px;
+      border: 1px solid #e1e4e8;
+      font-size: 0.78rem;
+      color: #444;
+      background-color: #f8fafc;
+    }
   </style>
 </head>
 <body>
@@ -118,6 +136,7 @@
       <div class="post-date">
         Nov 22, 2025
       </div>
+      
     </div>
 
     <div class="blog-post-item">
@@ -126,6 +145,7 @@
       <div class="post-date">
         7 min read · Nov 21, 2025 (Last edited Nov 22, 2025)
       </div>
+      <div class="post-tags"><span class="post-tag">Example</span> <span class="post-tag">Flutter</span></div>
     </div>
   </div>
 </body>

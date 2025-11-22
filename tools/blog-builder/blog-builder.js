@@ -627,7 +627,7 @@ function extractBlogPostMetadata(markdown) {
 }
 
 // Generate blog post HTML
-function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, date, updatedAt, estimatedReadingTime, blogPath) {
+function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, date, updatedAt, estimatedReadingTime, tags, blogPath) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -665,7 +665,7 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
     }
     
     .blog-header {
-      margin-bottom: 2rem;
+      margin-bottom: 0;
     }
     
     .blog-header h1 {
@@ -693,6 +693,24 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
       align-items: center;
       font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
     }
+
+    .blog-tags {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .blog-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.1rem 0.5rem;
+      border-radius: 9999px;
+      border: 1px solid #e1e4e8;
+      font-size: 0.8rem;
+      color: #444;
+      background-color: #f8fafc;
+    }
     
     .blog-author {
       display: inline-flex;
@@ -717,7 +735,7 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
     .blog-divider {
       border: 0;
       border-top: 1px solid #e1e4e8;
-      margin: 1.25rem 0 1.5rem;
+      margin: 0.75rem 0 1.5rem;
     }
     
     .blog-content h1 {
@@ -999,6 +1017,10 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
       date + (updatedAt ? ` (Edited ${updatedAt})` : '')
     ].filter(Boolean).join(' · ')}
     </div>
+    ${tags && tags.length ? `
+    <div class="blog-tags">
+      ${tags.map(tag => `<span class="blog-tag">${escapeHtml(tag)}</span>`).join('')}
+    </div>` : ''}
   </div>
   
   <hr class="blog-divider">
@@ -1020,6 +1042,7 @@ function generateIndexHTML(posts) {
       <div class="post-date">
         ${post.estimatedReadingTime ? `${post.estimatedReadingTime} · ` : ''}${post.date}${post.updatedAt ? ` (Last edited ${post.updatedAt})` : ''}
       </div>
+      ${post.tags && post.tags.length ? `<div class="post-tags">${post.tags.map(tag => `<span class="post-tag">${escapeHtml(tag)}</span>`).join(' ')}</div>` : ''}
     </div>`;
   }).join('\n');
 
@@ -1057,7 +1080,7 @@ function generateIndexHTML(posts) {
     }
     
     .blog-header {
-      margin-bottom: 2rem;
+      margin-bottom: 0;
     }
     
     .blog-header h1 {
@@ -1123,6 +1146,24 @@ function generateIndexHTML(posts) {
 
     .post-date-separator {
       color: #ccc;
+    }
+
+    .post-tags {
+      margin: 0.3rem 0 0.35rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .post-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.08rem 0.45rem;
+      border-radius: 9999px;
+      border: 1px solid #e1e4e8;
+      font-size: 0.78rem;
+      color: #444;
+      background-color: #f8fafc;
     }
   </style>
 </head>
@@ -1235,6 +1276,14 @@ function buildBlog() {
         }
       }
 
+      // Optional tags from metadata. We expect an array of non-empty strings.
+      let tags = [];
+      if (metadata && Array.isArray(metadata.tags)) {
+        tags = metadata.tags
+          .map(tag => typeof tag === 'string' ? tag.trim() : '')
+          .filter(tag => tag);
+      }
+
       // Process code injection
       markdown = processCodeInjection(markdown, blogDir);
 
@@ -1285,7 +1334,7 @@ function buildBlog() {
       }
 
       // Generate HTML
-      const html = generateBlogHTML(title, subtitle, authorName, authorAvatar, content, date, updatedAtDisplay, estimatedReadingTimeDisplay, folder);
+      const html = generateBlogHTML(title, subtitle, authorName, authorAvatar, content, date, updatedAtDisplay, estimatedReadingTimeDisplay, tags, folder);
 
       // Write HTML file
       const htmlPath = path.join(blogDir, 'index.html');
@@ -1301,6 +1350,7 @@ function buildBlog() {
         date,
         updatedAt: updatedAtDisplay,
         estimatedReadingTime: estimatedReadingTimeDisplay,
+        tags,
         dateSort: folder.substring(0, 8) // YYYYMMDD for sorting
       });
 
