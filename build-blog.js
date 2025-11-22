@@ -212,8 +212,6 @@ renderer.code = function (code, infostring, escaped) {
     lang ? `language-${lang}` : '',
   ].filter(Boolean).join(' ');
 
-  const counterStart = Math.max(startLine - 1, 0);
-
   const hasFilename = !!filename;
   const filenameHtml = hasFilename
     ? (
@@ -232,7 +230,7 @@ renderer.code = function (code, infostring, escaped) {
   const wrapperClass = hasFilename
     ? 'code-block-wrapper has-filename'
     : 'code-block-wrapper';
-  return `<div class="${wrapperClass}">${filenameHtml}<pre class="code-block code-with-lines"><code class="${classes}" data-start="${startLine}" style="counter-reset: line-number ${counterStart};">${lineHtml}</code></pre></div>\n`;
+  return `<div class="${wrapperClass}">${filenameHtml}<pre class="code-block code-with-lines"><code class="${classes}" data-start="${startLine}">${lineHtml}</code></pre></div>\n`;
 };
 
 // Ensure Dart is registered for syntax highlighting
@@ -317,19 +315,21 @@ function processLatex(markdown) {
   return processed;
 }
 
-// Process code injection syntax. Supports both:
-// 1) Legacy: {{code:path/to/file.ext:5-8}} or with multiple ranges:
-//    {{code:path/to/file.ext:5-8,16-20}}
-// 2) JSON-based: {{
-//       "@type": "code-block",
-//       "path": "example.dart",
-//       "alias": "bloc/hello.dart",
-//       "sourceUrl": "https://...",
-//       "lines": [ { "from": 5, "to": 8 }, { "from": 16, "to": 20 } ],
-//       "highlights": [ { "color": "orange", "lines": [ { "from": 16, "to": 20 } ] } ]
-//    }}
+// Process code injection syntax using JSON-based specs:
+// {{
+//   {
+//     "@type": "code-block",
+//     "path": "example.dart",
+//     "alias": "bloc/hello.dart",
+//     "sourceUrl": "https://...",
+//     "lines": [ { "from": 5, "to": 8 }, { "from": 16, "to": 20 } ],
+//     "highlights": [
+//       { "color": "orange", "lines": [ { "from": 16, "to": 20 } ] }
+//     ]
+//   }
+// }}
 function processCodeInjection(markdown, blogDir) {
-  // First handle JSON-based code block specs: {{ { ... } }}
+  // Handle JSON-based code block specs: {{ { ... } }}
   markdown = markdown.replace(/\{\{([\s\S]*?)\}\}/g, (match, innerRaw) => {
     const inner = innerRaw.trim();
     if (!inner.startsWith('{')) return match;
@@ -668,7 +668,6 @@ function generateBlogHTML(title, content, date, blogPath) {
     .blog-content pre.code-with-lines .code-line.code-ellipsis::before {
       color: #999;
       content: '';
-      counter-increment: none;
     }
 
     .blog-content pre.code-with-lines .code-line.code-highlight {
