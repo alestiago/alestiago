@@ -347,7 +347,7 @@ function generateBlogHTML(title, content, date, blogPath) {
       display: block;
       white-space: pre;
       padding-left: 3.25em; /* space for line-number gutter entirely inside the border */
-      line-height: 1.2em; /* compact line spacing for code blocks */
+      line-height: 1.5em; /* compact line spacing for code blocks */
     }
 
     .blog-content pre.code-with-lines .code-line {
