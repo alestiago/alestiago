@@ -25,7 +25,7 @@ One of the coolest features is the ability to reference code files directly. Her
 
 You can also reference specific line ranges. Here are just lines 5-8 from the same file:
 
-{{code:example.dart:5-8,16-20}}
+{{code:example.dart:5-8,16-20:highlight=17-19,highlightColor=orange:alias="bloc/hello.dart"}}
 
 ## Syntax Highlighting
 

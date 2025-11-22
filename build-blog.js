@@ -32,6 +32,8 @@ renderer.code = function (code, infostring, escaped) {
   let startLine = 1;
   let filename = '';
   let lineMap = null;
+  let highlightLines = null;
+  let highlightColor = null;
 
   if (info) {
     const firstTokenMatch = info.match(/^(\S+)/);
@@ -49,6 +51,11 @@ renderer.code = function (code, infostring, escaped) {
       filename = fileMatch[1];
     }
 
+    const aliasMatch = info.match(/alias\s*=\s*([^,}\s]+)/i);
+    if (aliasMatch) {
+      filename = aliasMatch[1];
+    }
+
     const lineMapMatch = info.match(/lineMap\s*=\s*([^,}\s]+)/i);
     if (lineMapMatch) {
       lineMap = lineMapMatch[1]
@@ -57,6 +64,42 @@ renderer.code = function (code, infostring, escaped) {
         .filter(Boolean)
         .map(s => parseInt(s, 10))
         .filter(n => !Number.isNaN(n));
+    }
+
+    const highlightMatch = info.match(/highlight\s*=\s*([^,}\s]+)/i);
+    if (highlightMatch) {
+      const spec = highlightMatch[1];
+      const parts = spec.split(/[|,]/).map(s => s.trim()).filter(Boolean);
+      const set = new Set();
+
+      for (const part of parts) {
+        if (/^\d+\s*-\s*\d+$/.test(part)) {
+          const [startStr, endStr] = part.split('-');
+          const start = parseInt(startStr.trim(), 10);
+          const end = parseInt(endStr.trim(), 10);
+          if (!Number.isNaN(start) && !Number.isNaN(end)) {
+            const from = Math.min(start, end);
+            const to = Math.max(start, end);
+            for (let n = from; n <= to; n++) {
+              set.add(n);
+            }
+          }
+        } else {
+          const n = parseInt(part, 10);
+          if (!Number.isNaN(n)) {
+            set.add(n);
+          }
+        }
+      }
+
+      if (set.size > 0) {
+        highlightLines = set;
+      }
+    }
+
+    const highlightColorMatch = info.match(/highlightColor\s*=\s*([^,}\s]+)/i);
+    if (highlightColorMatch) {
+      highlightColor = highlightColorMatch[1].toLowerCase();
     }
   }
 
@@ -99,6 +142,8 @@ renderer.code = function (code, infostring, escaped) {
       lineNumber = startLine + idx;
     }
 
+    const shouldHighlight = !isEllipsis && highlightLines && highlightLines.has(lineNumber);
+
     if (isEllipsis) {
       // Ellipsis line: no visible code content, but the line-number gutter
       // will render "..." instead of a number via CSS.
@@ -106,7 +151,19 @@ renderer.code = function (code, infostring, escaped) {
     }
 
     const safeLine = html === '' ? ' ' : html;
-    return `<span class="code-line" data-line="${lineNumber}">${safeLine}</span>`;
+    const classes = ['code-line'];
+    if (shouldHighlight) {
+      classes.push('code-highlight');
+      if (highlightColor === 'red') {
+        classes.push('code-highlight-red');
+      } else if (highlightColor === 'orange') {
+        classes.push('code-highlight-orange');
+      } else if (highlightColor === 'blue') {
+        classes.push('code-highlight-blue');
+      }
+    }
+
+    return `<span class="${classes.join(' ')}" data-line="${lineNumber}">${safeLine}</span>`;
   }).join('');
 
   const classes = [
@@ -224,6 +281,9 @@ function processCodeInjection(markdown, blogDir) {
 
     const lineRanges = [];
     let explicitStart = null;
+    let highlightSpec = null;
+    let highlightColorSpec = null;
+    let aliasSpec = null;
 
     for (let i = 1; i < parts.length; i++) {
       const token = parts[i].trim();
@@ -238,6 +298,31 @@ function processCodeInjection(markdown, blogDir) {
           const startMatch = sub.match(/^start\s*=\s*(\d+)$/i);
           if (startMatch) {
             explicitStart = parseInt(startMatch[1], 10);
+            continue;
+          }
+
+          const highlightMatch = sub.match(/^highlight\s*=\s*(.+)$/i);
+          if (highlightMatch) {
+            highlightSpec = highlightMatch[1].trim();
+            continue;
+          }
+
+          const highlightColorMatch = sub.match(/^highlightColor\s*=\s*(.+)$/i);
+          if (highlightColorMatch) {
+            highlightColorSpec = highlightColorMatch[1].trim();
+            continue;
+          }
+
+          const aliasMatch = sub.match(/^alias\s*=\s*(.+)$/i);
+          if (aliasMatch) {
+            let raw = aliasMatch[1].trim();
+            // Strip optional surrounding quotes, e.g. alias="hello.dart"
+            if ((raw.startsWith('"') && raw.endsWith('"')) ||
+              (raw.startsWith("'") && raw.endsWith("'"))) {
+              raw = raw.slice(1, -1);
+            }
+            aliasSpec = raw;
+            continue;
           }
         }
       }
@@ -328,6 +413,16 @@ function processCodeInjection(markdown, blogDir) {
         // Encode the per-line mapping so the renderer can show correct
         // original line numbers even across disjoint ranges.
         metaParts.push(`lineMap=${lineMapNumbers.join('|')}`);
+      }
+
+      if (highlightSpec) {
+        metaParts.push(`highlight=${highlightSpec}`);
+      }
+      if (highlightColorSpec) {
+        metaParts.push(`highlightColor=${highlightColorSpec}`);
+      }
+      if (aliasSpec) {
+        metaParts.push(`alias=${aliasSpec}`);
       }
 
       const meta = metaParts.length ? ` {${metaParts.join(', ')}}` : '';
@@ -520,6 +615,22 @@ function generateBlogHTML(title, content, date, blogPath) {
       color: #999;
       content: '';
       counter-increment: none;
+    }
+
+    .blog-content pre.code-with-lines .code-line.code-highlight {
+      background-color: #e6ffed; /* subtle green highlight */
+    }
+
+    .blog-content pre.code-with-lines .code-line.code-highlight.code-highlight-red {
+      background-color: #ffeef0; /* subtle red */
+    }
+
+    .blog-content pre.code-with-lines .code-line.code-highlight.code-highlight-orange {
+      background-color: #fff5e6; /* subtle orange */
+    }
+
+    .blog-content pre.code-with-lines .code-line.code-highlight.code-highlight-blue {
+      background-color: #e6f7ff; /* subtle blue */
     }
     
   
