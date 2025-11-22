@@ -50,13 +50,15 @@ renderer.code = function (code, infostring, escaped) {
     highlighted = escapeHtml(code);
   }
 
-  // Split into lines, keeping empty ones to preserve structure
+  // Split into lines, keeping empty ones to preserve structure.
+  // We join with an empty string so we don't create extra text nodes/newlines
+  // between each line inside the <code> element.
   const lines = highlighted.replace(/\n$/, '').split('\n');
   const lineHtml = lines.map((line, idx) => {
     const lineNumber = startLine + idx;
     const safeLine = line === '' ? ' ' : line;
     return `<span class="code-line" data-line="${lineNumber}">${safeLine}</span>`;
-  }).join('\n');
+  }).join('');
 
   const classes = [
     'hljs',
@@ -345,7 +347,7 @@ function generateBlogHTML(title, content, date, blogPath) {
       display: block;
       white-space: pre;
       padding-left: 3.25em; /* space for line-number gutter entirely inside the border */
-      line-height: 0.7em; /* compact line spacing for code blocks */
+      line-height: 1.2em; /* compact line spacing for code blocks */
     }
 
     .blog-content pre.code-with-lines .code-line {
@@ -365,8 +367,12 @@ function generateBlogHTML(title, content, date, blogPath) {
       color: #999;
       content: counter(line-number);
       counter-increment: line-number;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
     }
     
+  
     .blog-content img {
       max-width: 100%;
       height: auto;
