@@ -117,6 +117,21 @@ Here's the quadratic formula:
 x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 \]
 
+## Diagrams (Mermaid)
+
+You can also describe diagrams such as state machines using Mermaid:
+
+```mermaid
+stateDiagram-v2
+  direction LR
+  [*] --> Idle
+  Idle --> Loading: eventStart
+  Loading --> Success: loadOk
+  Loading --> Error: loadFail
+  Success --> [*]
+  Error --> [*]
+```
+
 ## Images
 
 You can include images in your posts:

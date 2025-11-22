@@ -41,6 +41,14 @@ renderer.code = function (code, infostring, escaped) {
       lang = firstTokenMatch[1];
     }
 
+    // Special handling for diagram blocks (e.g., Mermaid for state machines).
+    // We bypass syntax highlighting and line numbers and let Mermaid render
+    // the diagram client-side.
+    if (lang === 'mermaid') {
+      const safe = escapeHtml(code.replace(/\n$/, ''));
+      return `<div class="mermaid">\n${safe}\n</div>\n`;
+    }
+
     const startMatch = info.match(/start\s*=\s*(\d+)/i);
     if (startMatch) {
       startLine = parseInt(startMatch[1], 10) || 1;
@@ -933,7 +941,45 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
     .blog-content .footnote-ref a:hover {
       text-decoration: underline;
     }
+
+    /* Mermaid diagrams */
+    .blog-content .mermaid {
+      margin: 1.5rem 0;
+    }
+
+    /* Ensure edge labels (event names) remain readable on black lines */
+    .blog-content .mermaid .edgeLabel {
+      background-color: #ffffff;
+      padding: 0 0.2em;
+      border-radius: 2px;
+    }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    // Initialize Mermaid for any fenced mermaid code blocks rendered as
+    // <div class="mermaid">...</div> by the custom renderer.
+    // We use a neutral base theme and override colors to keep diagrams
+    // black-and-white so they match the blog's typography.
+    if (window.mermaid) {
+      window.mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        themeVariables: {
+          background: '#ffffff',
+          primaryColor: '#ffffff',
+          primaryBorderColor: '#000000',
+          primaryTextColor: '#000000',
+          lineColor: '#000000',
+          secondaryColor: '#ffffff',
+          secondaryBorderColor: '#000000',
+          secondaryTextColor: '#000000',
+          tertiaryColor: '#ffffff',
+          tertiaryBorderColor: '#000000',
+          tertiaryTextColor: '#000000'
+        }
+      });
+    }
+  </script>
 </head>
 <body>
   <div class="blog-nav">
