@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello world! - Alejandro Santiago</title>
+  <title>Testing internal BLoC events - Alejandro Santiago</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -376,18 +376,49 @@
   </div>
   
   <div class="blog-header">
-    <h1>Hello world!</h1>
-    
+    <h1>Testing internal BLoC events</h1>
+    <div class="blog-subtitle">This is an example blog post</div>
     <div class="blog-date-row">
-      Nov 22, 2025
+      <span class="blog-author"><img class="blog-author-avatar" src="https://avatars.githubusercontent.com/u/44524995?v=4" alt=""><span class="blog-author-name">Alejandro Santiago</span></span> · 7 min read · Nov 22, 2025
     </div>
     
+    <div class="blog-tags">
+      <span class="blog-tag">Flutter</span><span class="blog-tag">BLoC</span>
+    </div>
   </div>
   
   <hr class="blog-divider">
   
   <div class="blog-content">
+    <p>In BLoC (<code>package:bloc</code>), events are usually added outside of the <code>Bloc</code> subclass, we denote these as <em>external events</em>. However, events can also be added within the <code>Bloc</code> subclass, we denote these as <em>internal events</em>.</p>
+<p>In some select cases it may make sense for events to be added internally<sup class="footnote-ref"><a href="#footnote-1" id="footnote-ref-1">1</a></sup> (Angelov, 2022), when so happens testing with <code>package:bloc_test</code> might seem coumbersome, but it&#39;s not.</p>
+<h2>Illustrated example</h2>
+<p>Consider the scenario where you have three events (<code>EventA</code>, <code>EventB</code> and <code>EventC</code>).</p>
+<p><code>EventA</code>, <code>EventB</code> and <code>EventC</code> are all <em>external events</em>, but <code>EventC</code> is also an <em>internal event</em>. <code>EventC</code> is added from three sources:</p>
+<div class="mermaid">
+graph LR
+    Application[Application]
     
+    subgraph MyBloc[MyBloc]
+        EventAHandler[EventA handler]
+        EventBHandler[EventB handler]
+        EventCHandler[EventC handler]
+    end
+    
+    Application --&gt;|&quot;add(EventA)&quot;| EventAHandler
+    Application --&gt;|&quot;add(EventB)&quot;| EventBHandler
+    Application --&gt;|&quot;add(EventC)&quot;| EventCHandler
+    EventAHandler --&gt;|&quot;add(EventC)&quot;| EventCHandler
+    EventBHandler --&gt;|&quot;add(EventC)&quot;| EventCHandler
+</div>
+<p>To verify <code>EventC</code> is added, we can use <code>Bloc.observer</code> to capture events.</p>
+<div class="code-block-wrapper has-filename"><div class="code-filename">foo_bloc_test.dart</div><pre class="code-block code-with-lines"><code class="hljs language-dart" data-start="1"><span class="code-line" data-line="1"><span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;package:bloc/bloc.dart&#x27;</span>;</span><span class="code-line" data-line="2"><span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;package:bloc_test/bloc_test.dart&#x27;</span>;</span><span class="code-line" data-line="3"><span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;package:example/foo_bloc.dart&#x27;</span>;</span><span class="code-line" data-line="4"><span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;package:test/test.dart&#x27;</span>;</span><span class="code-line" data-line="5"> </span><span class="code-line" data-line="6"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_FooBlocObserver</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">BlocObserver</span> </span>{</span><span class="code-line" data-line="7">  <span class="hljs-built_in">List</span>&lt;FooEvent&gt; events = [];</span><span class="code-line" data-line="8"> </span><span class="code-line" data-line="9">  <span class="hljs-meta">@override</span></span><span class="code-line" data-line="10">  <span class="hljs-keyword">void</span> onEvent(<span class="hljs-keyword">covariant</span> FooBloc bloc, <span class="hljs-built_in">Object?</span> event) {</span><span class="code-line" data-line="11">    <span class="hljs-keyword">super</span>.onEvent(bloc, event);</span><span class="code-line" data-line="12">    <span class="hljs-keyword">if</span> (event <span class="hljs-keyword">case</span> FooEvent event) events.add(event);</span><span class="code-line" data-line="13">  }</span><span class="code-line" data-line="14">}</span><span class="code-line" data-line="15"> </span><span class="code-line" data-line="16"><span class="hljs-keyword">void</span> main() {</span><span class="code-line" data-line="17">  blocTest&lt;FooBloc, FooState&gt;(</span><span class="code-line" data-line="18">    <span class="hljs-string">&#x27;EventA adds EventC&#x27;</span>,</span><span class="code-line" data-line="19">    build: () =&gt; FooBloc(),</span><span class="code-line" data-line="20">    setUp: () =&gt; Bloc.observer = _FooBlocObserver(),</span><span class="code-line" data-line="21">    act: (bloc) =&gt; bloc.add(EventA()),</span><span class="code-line" data-line="22">    verify: (bloc) {</span><span class="code-line" data-line="23">      <span class="hljs-keyword">final</span> observer = Bloc.observer <span class="hljs-keyword">as</span> _FooBlocObserver;</span><span class="code-line" data-line="24">      expect(observer.events, containsOnce(isA&lt;EventC&gt;())); <span class="hljs-comment">// Pass</span></span><span class="code-line" data-line="25">    },</span><span class="code-line" data-line="26">  );</span><span class="code-line" data-line="27">}</span></code></pre></div>
+<hr>
+<h2>Footnotes</h2>
+<ol>
+<li><a id="footnote-1"></a>As outlined in bloclibrary.dev documentation <a href="https://bloclibrary.dev/faqs/#adding-events-within-a-bloc">&quot;Adding Events within a Bloc&quot;</a>, originally written by Felix Angelov at Pull Request <a href="https://github.com/felangel/bloc/pull/3633">#3633</a>; accessed November 2025.</li>
+</ol>
+
   </div>
 </body>
 </html>
