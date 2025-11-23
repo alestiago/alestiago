@@ -9,7 +9,8 @@
     "subtitle": "This is an example blog post",
     "updatedAt": "2025-11-22",
     "estimatedReadingTime": 7,
-    "tags": ["Example", "Flutter"]
+    "tags": ["Example", "Flutter"],
+    "listed": false
   }
 }}
 

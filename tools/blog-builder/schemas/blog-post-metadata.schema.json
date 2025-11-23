@@ -57,6 +57,10 @@
                 "type": "string",
                 "minLength": 1
             }
+        },
+        "listed": {
+            "type": "boolean",
+            "description": "Optional flag to control visibility in the blog index. If set to false, the post will be generated but will not appear in the main blog listing. Defaults to true."
         }
     },
     "required": [

@@ -1304,17 +1304,19 @@ function buildBlog() {
 
       console.log(`✓ Generated ${folder}/index.html`);
 
-      // Add to posts list for index
-      posts.push({
-        folder,
-        title,
-        subtitle,
-        date,
-        updatedAt: updatedAtDisplay,
-        estimatedReadingTime: estimatedReadingTimeDisplay,
-        tags,
-        dateSort: folder.substring(0, 8) // YYYYMMDD for sorting
-      });
+      // Add to posts list for index (unless listed is explicitly false)
+      if (!metadata || metadata.listed !== false) {
+        posts.push({
+          folder,
+          title,
+          subtitle,
+          date,
+          updatedAt: updatedAtDisplay,
+          estimatedReadingTime: estimatedReadingTimeDisplay,
+          tags,
+          dateSort: folder.substring(0, 8) // YYYYMMDD for sorting
+        });
+      }
 
     } catch (err) {
       console.error(`Error processing ${folder}:`, err.message);
