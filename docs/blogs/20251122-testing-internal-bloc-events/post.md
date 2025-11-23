@@ -6,7 +6,7 @@
       "name": "Alejandro Santiago",
       "avatar": "https://avatars.githubusercontent.com/u/44524995?v=4"
     },
-    "subtitle": "Verifying internal events with `package:bloc_test`.",
+    "subtitle": "Verifying internal events with the bloc_test package.",
     "updatedAt": "2025-11-22",
     "estimatedReadingTime": 7,
     "tags": ["Flutter", "BLoC"]

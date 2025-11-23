@@ -1218,7 +1218,7 @@ function buildBlog() {
       // Optional subtitle from metadata
       let subtitle = '';
       if (metadata && typeof metadata.subtitle === 'string' && metadata.subtitle.trim()) {
-        subtitle = metadata.subtitle.trim();
+        subtitle = marked.parseInline(metadata.subtitle.trim());
       }
 
       // Optional author from metadata. Supports either a simple string

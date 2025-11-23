@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Testing internal BLoC events - Alejandro Santiago</title>
+  <title>Test Subtitle - Alejandro Santiago</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -376,49 +376,22 @@
   </div>
   
   <div class="blog-header">
-    <h1>Testing internal BLoC events</h1>
-    <div class="blog-subtitle">Verifying internal events with the bloc_test package.</div>
+    <h1>Test Subtitle</h1>
+    <div class="blog-subtitle">Subtitle with <code>code</code> and <strong>bold</strong></div>
     <div class="blog-date-row">
-      <span class="blog-author"><img class="blog-author-avatar" src="https://avatars.githubusercontent.com/u/44524995?v=4" alt=""><span class="blog-author-name">Alejandro Santiago</span></span> · 7 min read · Nov 22, 2025
+      <span class="blog-author"><span class="blog-author-name">Test Author</span></span> · Nov 23, 2025
     </div>
     
     <div class="blog-tags">
-      <span class="blog-tag">Flutter</span><span class="blog-tag">BLoC</span>
+      <span class="blog-tag">test</span>
     </div>
   </div>
   
   <hr class="blog-divider">
   
   <div class="blog-content">
-    <p>In BLoC (<code>package:bloc</code>), events are usually added outside of the <code>Bloc</code> subclass, we denote these as <em>external events</em>. However, events can also be added within the <code>Bloc</code> subclass, we denote these as <em>internal events</em>.</p>
-<p>In some select cases it may make sense for events to be added internally<sup class="footnote-ref"><a href="#footnote-1" id="footnote-ref-1">1</a></sup> (Angelov, 2022), when so happens testing with <code>package:bloc_test</code> might seem coumbersome, but it&#39;s not.</p>
-<h2>Illustrated example</h2>
-<p>Consider the scenario where you have three events (<code>EventA</code>, <code>EventB</code> and <code>EventC</code>).</p>
-<p><code>EventA</code>, <code>EventB</code> and <code>EventC</code> are all <em>external events</em>, but <code>EventC</code> is also an <em>internal event</em>. <code>EventC</code> is added from three sources:</p>
-<div class="mermaid">
-graph LR
-    Application[Application]
-    
-    subgraph MyBloc[MyBloc]
-        EventAHandler[EventA handler]
-        EventBHandler[EventB handler]
-        EventCHandler[EventC handler]
-    end
-    
-    Application --&gt;|&quot;add(EventA)&quot;| EventAHandler
-    Application --&gt;|&quot;add(EventB)&quot;| EventBHandler
-    Application --&gt;|&quot;add(EventC)&quot;| EventCHandler
-    EventAHandler --&gt;|&quot;add(EventC)&quot;| EventCHandler
-    EventBHandler --&gt;|&quot;add(EventC)&quot;| EventCHandler
-</div>
-<p>To verify <code>EventC</code> is added, we can use <code>Bloc.observer</code><sup class="footnote-ref"><a href="#footnote-2" id="footnote-ref-2">2</a></sup> to capture events.</p>
-<div class="code-block-wrapper has-filename"><div class="code-filename">foo_bloc_test.dart</div><pre class="code-block code-with-lines"><code class="hljs language-dart" data-start="1"><span class="code-line" data-line="1"><span style="color:#D73A49">import</span><span style="color:#24292E"> </span><span style="color:#032F62">&#39;package:bloc/bloc.dart&#39;</span><span style="color:#24292E">;</span></span><span class="code-line" data-line="2"><span style="color:#D73A49">import</span><span style="color:#24292E"> </span><span style="color:#032F62">&#39;package:bloc_test/bloc_test.dart&#39;</span><span style="color:#24292E">;</span></span><span class="code-line" data-line="3"><span style="color:#D73A49">import</span><span style="color:#24292E"> </span><span style="color:#032F62">&#39;package:example/foo_bloc.dart&#39;</span><span style="color:#24292E">;</span></span><span class="code-line" data-line="4"><span style="color:#D73A49">import</span><span style="color:#24292E"> </span><span style="color:#032F62">&#39;package:test/test.dart&#39;</span><span style="color:#24292E">;</span></span><span class="code-line" data-line="5"> </span><span class="code-line" data-line="6"><span style="color:#D73A49">class</span><span style="color:#24292E"> </span><span style="color:#005CC5">_FooBlocObserver</span><span style="color:#24292E"> </span><span style="color:#D73A49">extends</span><span style="color:#24292E"> </span><span style="color:#005CC5">BlocObserver</span><span style="color:#24292E"> {</span></span><span class="code-line" data-line="7"><span style="color:#24292E">  </span><span style="color:#005CC5">List</span><span style="color:#24292E">&lt;</span><span style="color:#005CC5">FooEvent</span><span style="color:#24292E">&gt; events </span><span style="color:#D73A49">=</span><span style="color:#24292E"> [];</span></span><span class="code-line" data-line="8"> </span><span class="code-line" data-line="9"><span style="color:#24292E">  </span><span style="color:#D73A49">@override</span></span><span class="code-line" data-line="10"><span style="color:#24292E">  </span><span style="color:#D73A49">void</span><span style="color:#24292E"> </span><span style="color:#6F42C1">onEvent</span><span style="color:#24292E">(</span><span style="color:#D73A49">covariant</span><span style="color:#24292E"> </span><span style="color:#005CC5">FooBloc</span><span style="color:#24292E"> bloc, </span><span style="color:#005CC5">Object</span><span style="color:#D73A49">?</span><span style="color:#24292E"> event) {</span></span><span class="code-line" data-line="11"><span style="color:#24292E">    </span><span style="color:#005CC5">super</span><span style="color:#24292E">.</span><span style="color:#6F42C1">onEvent</span><span style="color:#24292E">(bloc, event);</span></span><span class="code-line" data-line="12"><span style="color:#24292E">    </span><span style="color:#D73A49">if</span><span style="color:#24292E"> (event </span><span style="color:#D73A49">case</span><span style="color:#24292E"> </span><span style="color:#005CC5">FooEvent</span><span style="color:#24292E"> event) events.</span><span style="color:#6F42C1">add</span><span style="color:#24292E">(event);</span></span><span class="code-line" data-line="13"><span style="color:#24292E">  }</span></span><span class="code-line" data-line="14"><span style="color:#24292E">}</span></span><span class="code-line" data-line="15"> </span><span class="code-line" data-line="16"><span style="color:#D73A49">void</span><span style="color:#24292E"> </span><span style="color:#6F42C1">main</span><span style="color:#24292E">() {</span></span><span class="code-line" data-line="17"><span style="color:#24292E">  </span><span style="color:#6F42C1">blocTest</span><span style="color:#24292E">&lt;</span><span style="color:#005CC5">FooBloc</span><span style="color:#24292E">, </span><span style="color:#005CC5">FooState</span><span style="color:#24292E">&gt;(</span></span><span class="code-line" data-line="18"><span style="color:#24292E">    </span><span style="color:#032F62">&#39;EventA adds EventC&#39;</span><span style="color:#24292E">,</span></span><span class="code-line" data-line="19"><span style="color:#24292E">    build</span><span style="color:#D73A49">:</span><span style="color:#24292E"> () </span><span style="color:#D73A49">=&gt;</span><span style="color:#24292E"> </span><span style="color:#005CC5">FooBloc</span><span style="color:#24292E">(),</span></span><span class="code-line" data-line="20"><span style="color:#24292E">    setUp</span><span style="color:#D73A49">:</span><span style="color:#24292E"> () </span><span style="color:#D73A49">=&gt;</span><span style="color:#24292E"> </span><span style="color:#005CC5">Bloc</span><span style="color:#24292E">.observer </span><span style="color:#D73A49">=</span><span style="color:#24292E"> </span><span style="color:#005CC5">_FooBlocObserver</span><span style="color:#24292E">(),</span></span><span class="code-line" data-line="21"><span style="color:#24292E">    act</span><span style="color:#D73A49">:</span><span style="color:#24292E"> (bloc) </span><span style="color:#D73A49">=&gt;</span><span style="color:#24292E"> bloc.</span><span style="color:#6F42C1">add</span><span style="color:#24292E">(</span><span style="color:#005CC5">EventA</span><span style="color:#24292E">()),</span></span><span class="code-line" data-line="22"><span style="color:#24292E">    verify</span><span style="color:#D73A49">:</span><span style="color:#24292E"> (bloc) {</span></span><span class="code-line" data-line="23"><span style="color:#24292E">      </span><span style="color:#D73A49">final</span><span style="color:#24292E"> observer </span><span style="color:#D73A49">=</span><span style="color:#24292E"> </span><span style="color:#005CC5">Bloc</span><span style="color:#24292E">.observer </span><span style="color:#D73A49">as</span><span style="color:#24292E"> </span><span style="color:#005CC5">_FooBlocObserver</span><span style="color:#24292E">;</span></span><span class="code-line" data-line="24"><span style="color:#24292E">      </span><span style="color:#6F42C1">expect</span><span style="color:#24292E">(observer.events, </span><span style="color:#6F42C1">containsOnce</span><span style="color:#24292E">(</span><span style="color:#6F42C1">isA</span><span style="color:#24292E">&lt;</span><span style="color:#005CC5">EventC</span><span style="color:#24292E">&gt;())); </span><span style="color:#6A737D">// Pass</span></span><span class="code-line" data-line="25"><span style="color:#24292E">    },</span></span><span class="code-line" data-line="26"><span style="color:#24292E">  );</span></span><span class="code-line" data-line="27"><span style="color:#24292E">}</span></span></code></pre></div>
-<hr>
-<h2>Footnotes</h2>
-<ol>
-<li><a id="footnote-1"></a>As outlined in bloclibrary.dev documentation <a href="https://bloclibrary.dev/faqs/#adding-events-within-a-bloc">&quot;Adding Events within a Bloc&quot;</a>, originally written by Felix Angelov at Pull Request <a href="https://github.com/felangel/bloc/pull/3633">#3633</a>; accessed November 2025.</li>
-<li><a id="footnote-2"></a>As outlined in bloclibrary.dev documentation <a href="https://bloclibrary.dev/bloc-concepts/#observing-a-bloc">&quot;Observing a Bloc&quot;</a>, originally written by Felix Angelov at Pull Request <a href="https://github.com/felangel/bloc/pull/1441">#1441</a>; accessed November 2025.</li>
-</ol>
+    <h1>Test Subtitle</h1>
+<p>Content.</p>
 
   </div>
 </body>
