@@ -1,17 +1,20 @@
 const fs = require('fs');
 const path = require('path');
 const { marked } = require('marked');
-const hljs = require('highlight.js');
 const katex = require('katex');
+let highlighter;
 
 // Shared highlight helper so we can reuse it in the custom renderer
+// Shared highlight helper (now using shiki tokens if needed, but mostly renderer.code does the work)
 function highlightCode(code, lang) {
-  if (lang && hljs.getLanguage(lang)) {
+  // This is kept for compatibility if needed, but renderer.code should handle it.
+  // If we need a simple highlighter:
+  if (highlighter && lang) {
     try {
-      return hljs.highlight(code, { language: lang }).value;
-    } catch (err) { }
+      return highlighter.codeToHtml(code, { lang, theme: 'github-light' });
+    } catch (e) { }
   }
-  return code;
+  return escapeHtml(code);
 }
 
 function escapeHtml(str) {
@@ -42,8 +45,6 @@ renderer.code = function (code, infostring, escaped) {
     }
 
     // Special handling for diagram blocks (e.g., Mermaid for state machines).
-    // We bypass syntax highlighting and line numbers and let Mermaid render
-    // the diagram client-side.
     if (lang === 'mermaid') {
       const safe = escapeHtml(code.replace(/\n$/, ''));
       return `<div class="mermaid">\n${safe}\n</div>\n`;
@@ -59,15 +60,11 @@ renderer.code = function (code, infostring, escaped) {
       filename = fileMatch[1];
     }
 
-    // Alias, if present, overrides the displayed filename. We expect it to be
-    // quoted, e.g. alias="bloc/hello.dart".
     const aliasMatch = info.match(/alias\s*=\s*"(.*?)"/i);
     if (aliasMatch) {
       filename = aliasMatch[1];
     }
 
-    // Optional source URL for the filename tab, expected in quotes to allow
-    // characters like ':' – e.g. sourceUrl="https://example.com/file".
     const sourceMatch = info.match(/sourceUrl\s*=\s*"(.*?)"/i);
     if (sourceMatch) {
       sourceUrl = sourceMatch[1];
@@ -83,16 +80,6 @@ renderer.code = function (code, infostring, escaped) {
         .filter(n => !Number.isNaN(n));
     }
 
-    // Parse per-line highlight rules. We support both:
-    //   highlight=17-19{color:"red"}
-    //   highlight=6-7{color:"red"},highlight=16-18{color:"orange"} (multiple entries)
-    // as well as legacy:
-    //   highlight=17-19,21  (optionally with highlightColor="red")
-    //
-    // For new-style specs we need to capture the entire `{color:"..."}` block,
-    // including the closing `}`. This pattern captures either:
-    //   - `[^\s,}]+}` → a value ending with `}`, e.g. 17-19{color:"red"}
-    //   - `[^\s,}]+`  → a simple numeric/legacy value, e.g. 17-19 or 21
     const highlightRegex = /highlight\s*=\s*([^\s,}]+\}|[^\s,}]+)/gi;
     let hm;
     let legacyHighlightColor = null;
@@ -104,13 +91,11 @@ renderer.code = function (code, infostring, escaped) {
 
     while ((hm = highlightRegex.exec(info)) !== null) {
       const spec = hm[1];
-
-      // New syntax with optional inline color: 17-19{color:"red"} or 21{color:"blue"}
       const newSyntaxMatch = spec.match(/^(\d+)(?:\s*-\s*(\d+))?(?:\{color:"(red|orange|blue)"\})?$/i);
       if (newSyntaxMatch) {
         const startNum = parseInt(newSyntaxMatch[1], 10);
         const endNum = newSyntaxMatch[2] ? parseInt(newSyntaxMatch[2], 10) : startNum;
-        const colorKey = (newSyntaxMatch[3] || '').toLowerCase() || null; // null => default green
+        const colorKey = (newSyntaxMatch[3] || '').toLowerCase() || null;
 
         if (!Number.isNaN(startNum) && !Number.isNaN(endNum)) {
           const from = Math.min(startNum, endNum);
@@ -123,7 +108,6 @@ renderer.code = function (code, infostring, escaped) {
         continue;
       }
 
-      // Legacy syntax: 17-19,21 (optionally combined with highlightColor="red").
       const parts = spec.split(/[|,]/).map(s => s.trim()).filter(Boolean);
       for (const part of parts) {
         if (/^\d+\s*-\s*\d+$/.test(part)) {
@@ -135,7 +119,6 @@ renderer.code = function (code, infostring, escaped) {
             const to = Math.max(startNum, endNum);
             if (!highlightByLine) highlightByLine = new Map();
             for (let n = from; n <= to; n++) {
-              // Legacy: use block-level highlightColor if provided, otherwise default.
               highlightByLine.set(n, legacyHighlightColor);
             }
           }
@@ -150,73 +133,68 @@ renderer.code = function (code, infostring, escaped) {
     }
   }
 
-  // Work with raw lines so we can support special "ellipsis" separator lines.
-  // We use a sentinel value that processCodeInjection can insert between
-  // disjoint line ranges, and render it as a grey "..." without a line number.
-  const rawLines = code.replace(/\n$/, '').split('\n');
+  // Use shiki to tokenize
+  let tokens;
+  try {
+    // Ensure lang is supported, otherwise fallback to text or markdown
+    const loadedLangs = highlighter.getLoadedLanguages();
+    const safeLang = loadedLangs.includes(lang) ? lang : 'text';
+    tokens = highlighter.codeToTokens(code, { lang: safeLang, theme: 'github-light' }).tokens;
+  } catch (e) {
+    console.error(`Failed to highlight ${lang}:`, e);
+    // Fallback to simple splitting
+    tokens = code.split('\n').map(line => [{ content: line, color: '' }]);
+  }
+
+  // If code ends with newline, shiki might give an extra empty line token.
+  // We want to match the input lines.
+  // The original code used: const rawLines = code.replace(/\n$/, '').split('\n');
+  // Let's check if we need to trim the last token line if it's empty and caused by trailing newline.
+  if (code.endsWith('\n') && tokens.length > 0 && tokens[tokens.length - 1].length === 0) {
+    tokens.pop();
+  }
 
   const ELLIPSIS_SENTINEL = '__CODE_ELLIPSIS__';
-
-  const lineInfos = rawLines.map(line => ({
-    raw: line,
-    isEllipsis: line.trim() === ELLIPSIS_SENTINEL
-  }));
-
-  // Highlight each non-ellipsis line individually so syntax highlighting
-  // still works even when we insert special ellipsis separator lines.
-  const highlightedLines = lineInfos.map(info => {
-    if (info.isEllipsis) {
-      // No content on the code side; the gutter will show "..." instead.
-      return '';
-    }
-    if (lang) {
-      return highlightCode(info.raw, lang);
-    }
-    return escapeHtml(info.raw);
-  });
-
   let lineMapIndex = 0;
 
-  const lineHtml = highlightedLines.map((html, idx) => {
-    const { isEllipsis } = lineInfos[idx];
-    let lineNumber;
+  const lineHtml = tokens.map((lineTokens, idx) => {
+    // Reconstruct line text to check for ellipsis
+    const lineContent = lineTokens.map(t => t.content).join('');
+    const isEllipsis = lineContent.trim() === ELLIPSIS_SENTINEL;
 
+    let lineNumber;
     if (lineMap && !isEllipsis && lineMapIndex < lineMap.length) {
-      // Use explicit mapping when provided (from code injection with ranges).
       lineNumber = lineMap[lineMapIndex++];
     } else {
-      // Fallback: simple sequential numbering based on startLine.
       lineNumber = startLine + idx;
     }
 
-    const colorKey = !isEllipsis && highlightByLine ? highlightByLine.get(lineNumber) : undefined;
-    const shouldHighlight = colorKey !== undefined;
-
     if (isEllipsis) {
-      // Ellipsis line: no visible code content, but the line-number gutter
-      // will render "..." instead of a number via CSS.
       return `<span class="code-line code-ellipsis" data-line="${lineNumber}"> </span>`;
     }
 
-    const safeLine = html === '' ? ' ' : html;
+    const colorKey = highlightByLine ? highlightByLine.get(lineNumber) : undefined;
+    const shouldHighlight = colorKey !== undefined;
+
     const classes = ['code-line'];
     if (shouldHighlight) {
       classes.push('code-highlight');
-      if (colorKey === 'red') {
-        classes.push('code-highlight-red');
-      } else if (colorKey === 'orange') {
-        classes.push('code-highlight-orange');
-      } else if (colorKey === 'blue') {
-        classes.push('code-highlight-blue');
-      }
-      // Otherwise, default green via .code-highlight.
+      if (colorKey === 'red') classes.push('code-highlight-red');
+      else if (colorKey === 'orange') classes.push('code-highlight-orange');
+      else if (colorKey === 'blue') classes.push('code-highlight-blue');
     }
 
-    return `<span class="${classes.join(' ')}" data-line="${lineNumber}">${safeLine}</span>`;
+    // Render tokens
+    const lineInnerHtml = lineTokens.map(t => {
+      const style = t.color ? `style="color:${t.color}"` : '';
+      return `<span ${style}>${escapeHtml(t.content)}</span>`;
+    }).join('') || ' '; // Ensure empty lines have height
+
+    return `<span class="${classes.join(' ')}" data-line="${lineNumber}">${lineInnerHtml}</span>`;
   }).join('');
 
   const classes = [
-    'hljs',
+    'hljs', // Keep hljs class for potential CSS compat, or remove if not needed
     lang ? `language-${lang}` : '',
   ].filter(Boolean).join(' ');
 
@@ -227,9 +205,7 @@ renderer.code = function (code, infostring, escaped) {
       const url = new URL(sourceUrl);
       const faviconUrl = `${url.origin}/favicon.ico`;
       faviconHtml = `<img src="${escapeHtml(faviconUrl)}" alt="" class="code-filename-favicon">`;
-    } catch (e) {
-      // If URL parsing fails, skip favicon.
-    }
+    } catch (e) { }
   }
 
   const filenameHtml = hasFilename
@@ -240,31 +216,17 @@ renderer.code = function (code, infostring, escaped) {
     )
     : '';
 
-  // Important: do NOT append a trailing newline inside <code>, because with
-  // white-space: pre that would render as an extra blank line after the last
-  // code line.
-  //
-  // We wrap the <pre> in a container so the filename "tab" can sit just above
-  // the code block border without being clipped by the pre's overflow rules.
   const wrapperClass = hasFilename
     ? 'code-block-wrapper has-filename'
     : 'code-block-wrapper';
   return `<div class="${wrapperClass}">${filenameHtml}<pre class="code-block code-with-lines"><code class="${classes}" data-start="${startLine}">${lineHtml}</code></pre></div>\n`;
 };
 
-// Ensure Dart is registered for syntax highlighting
-// (highlight.js core doesn't always include every language by default)
-try {
-  const dart = require('highlight.js/lib/languages/dart');
-  hljs.registerLanguage('dart', dart);
-} catch (e) {
-  // If for some reason Dart can't be loaded, fail silently
-}
+// Removed manual highlight.js registration
 
-// Configure marked with highlight.js
+// Configure marked (highlight is handled by renderer.code)
 marked.setOptions({
   renderer,
-  highlight: highlightCode,
   breaks: true,
   gfm: true
 });
@@ -637,7 +599,7 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <style>
     body {
@@ -767,7 +729,7 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
     }
     
     .blog-content pre {
-      background-color: #f6f8fa;
+      background-color: #ffffff;
       border: 1px solid #e1e4e8;
       border-radius: 6px;
       padding: 16px;
@@ -781,7 +743,7 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
     }
     
     .blog-content p code {
-      background-color: #f6f8fa;
+      background-color: #ffffff;
       padding: 0.2em 0.4em;
       border-radius: 3px;
       font-size: 0.9em;
@@ -819,7 +781,7 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
       padding: 0.1em 0.6em;
       font-size: 0.75em;
       color: #666;
-      background-color: #f6f8fa;
+      background-color: #ffffff;
       border: 1px solid #e1e4e8;
       border-bottom: none;
       border-top-left-radius: 6px;
@@ -1372,4 +1334,23 @@ function buildBlog() {
 }
 
 // Run the build
-buildBlog();
+// Main entry point
+async function main() {
+  const { createHighlighter } = await import('shiki');
+
+  highlighter = await createHighlighter({
+    themes: ['github-light'],
+    langs: [
+      'javascript', 'typescript', 'dart', 'python', 'java', 'cpp', 'c', 'go', 'rust',
+      'ruby', 'php', 'html', 'css', 'json', 'yaml', 'xml', 'bash', 'sh', 'markdown'
+    ],
+  });
+
+
+  await buildBlog();
+}
+
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
