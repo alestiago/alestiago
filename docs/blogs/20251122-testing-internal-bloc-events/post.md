@@ -8,7 +8,7 @@
     },
     "subtitle": "Verifying internal events with the bloc_test package.",
     "updatedAt": "2025-11-22",
-    "estimatedReadingTime": 7,
+    "estimatedReadingTime": 2,
     "tags": ["Flutter", "BLoC"]
   }
 }}
@@ -45,7 +45,7 @@ To verify `EventC` is added, we can use `Bloc.observer`[^observing_a_bloc] to ca
 {{
   {
     "@type": "code-block",
-    "path": "example/test/example1_test.dart",
+    "path": "example/test/example3_test.dart",
     "alias": "foo_bloc_test.dart"
   }
 }}
