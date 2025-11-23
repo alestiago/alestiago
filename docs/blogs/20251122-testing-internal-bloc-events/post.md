@@ -6,7 +6,7 @@
       "name": "Alejandro Santiago",
       "avatar": "https://avatars.githubusercontent.com/u/44524995?v=4"
     },
-    "subtitle": "This is an example blog post",
+    "subtitle": "Verifying internal events with `package:bloc_test`.",
     "updatedAt": "2025-11-22",
     "estimatedReadingTime": 7,
     "tags": ["Flutter", "BLoC"]
@@ -40,7 +40,7 @@ graph LR
     EventBHandler -->|"add(EventC)"| EventCHandler
 ```
 
-To verify `EventC` is added, we can use `Bloc.observer` to capture events.
+To verify `EventC` is added, we can use `Bloc.observer`[^observing_a_bloc] to capture events.
 
 {{
   {
@@ -51,3 +51,4 @@ To verify `EventC` is added, we can use `Bloc.observer` to capture events.
 }}
 
 [^adding_events_within_a_bloc]: As outlined in bloclibrary.dev documentation ["Adding Events within a Bloc"](https://bloclibrary.dev/faqs/#adding-events-within-a-bloc), originally written by Felix Angelov at Pull Request [#3633](https://github.com/felangel/bloc/pull/3633); accessed November 2025.
+[^observing_a_bloc]: As outlined in bloclibrary.dev documentation ["Observing a Bloc"](https://bloclibrary.dev/bloc-concepts/#observing-a-bloc), originally written by Felix Angelov at Pull Request [#1441](https://github.com/felangel/bloc/pull/1441); accessed November 2025.
