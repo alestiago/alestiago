@@ -1,41 +1,51 @@
-@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=STIX+Two+Text:wght@400;500;600;700&display=swap');
 
 * {
   margin: 0;
 }
 
 body {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
+  line-height: 1.6;
+  padding: 2rem;
+  max-width: 720px;
+  margin: auto;
+  color: #111;
 }
 
-img {
-  width: 200px;
-}
 
 h1 {
-  color: #394077;
-  font-family: 'Pacifico', cursive;
-  font-size: 1.8rem;
+  font-size: 1.6rem;
+  margin-bottom: 0.25rem;
+  color: #111;
+  letter-spacing: 0.01em;
+  font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
 }
 
 h2 {
-  font-family: 'Source Sans Pro', sans-serif;
-  font-size: 0.8rem;
-  margin-bottom: 20px;
+  font-family: "STIX Two Text", Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #444;
+  font-weight: normal;
 }
 
-svg {
+p {
+  margin: 0.6rem 0;
+}
+
+.socials {
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
+
+.social {
+  color: #666;
+  text-decoration: none;
+  margin-right: 1rem;
   cursor: pointer;
-  fill: #394077;
-  margin: 5px;
-  transform: scale(1.25);
 }
 
-svg:hover {
-  fill: #626893
+.social:hover {
+  text-decoration: underline;
 }

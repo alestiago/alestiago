@@ -742,7 +742,8 @@ function generateBlogHTML(title, subtitle, authorName, authorAvatar, content, da
       font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     }
     
-    .blog-content p code {
+    .blog-content p code,
+    .blog-content li code {
       background-color: #ffffff;
       padding: 0.2em 0.4em;
       border-radius: 3px;
