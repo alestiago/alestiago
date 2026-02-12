@@ -13,3 +13,7 @@ dependencies:
 dev_dependencies:
   test:
   bloc_test:
+    git:
+      url: https://github.com/felangel/bloc.git
+      path: packages/bloc_test
+      ref: d038a35460877d39b2af7466bb92a41d58d37e9f

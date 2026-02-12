@@ -26,38 +26,7 @@
   <p>Yes, this website is suspiciously simple. It's not loading, this is it. Hi, I'm Alejandro, and before you ask: no
     cookies and no "subscribe to my newsletter" popup. Just you,
     me, and an actual paragraph you might read all the way
-    through. <span id="popup-hint" style="cursor: text;">Revolutionary</span>, I know. Either way, welcome. There's
-    something hidden within the actual paragraph that only readers
-    can find, you already know which word to click on.</p>
-
-  <script>
-    document.getElementById('popup-hint').addEventListener('click', function () {
-      if (!document.getElementById('hint-message')) {
-        const hintParagraph = document.createElement('p');
-        hintParagraph.id = 'hint-message';
-        hintParagraph.innerHTML = 'Nice try, but that was not it. Read carefully, it\'s within the <strong id="paragraph-hint" style="cursor: text;">paragraph</strong>.';
-        this.parentElement.after(hintParagraph);
-
-        document.getElementById('paragraph-hint').addEventListener('click', function () {
-          if (!document.getElementById('actual-paragraph')) {
-            const span = document.createElement('span');
-            span.id = 'actual-paragraph';
-            span.innerHTML = ' The <em id="actual-paragraph-hint" style="cursor: text;">actual paragraph</em>.';
-            this.parentElement.appendChild(span);
-
-            document.getElementById('actual-paragraph-hint').addEventListener('click', function () {
-              if (!document.getElementById('final-hint')) {
-                const finalHint = document.createElement('p');
-                finalHint.id = 'final-hint';
-                finalHint.textContent = 'You\'ve tried a couple of times, but given the amount of effort you\'ve invested, I\'ll reward you with the last hint: find the "actual paragraph" in the first paragraph.';
-                document.getElementById('hint-message').after(finalHint);
-              }
-            });
-          }
-        });
-      }
-    });
-  </script>
+    through. Revolutionary, I know. Either way, welcome.</p>
 </body>
 
 </html>
