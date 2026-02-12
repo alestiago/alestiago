@@ -70,7 +70,7 @@ Then, verifying the events:
 
 If you want to learn more about the advantages and disadvantages of using internally added events refer to the ["Adding Events within a Bloc"](https://bloclibrary.dev/faqs/#adding-events-within-a-bloc)[^adding_events_within_a_bloc] in the Bloc library documentation.
 
-Finally, the complete example source code is available in my [GitHub](https://github.com/alestiago/alestiago/tree/master/docs/blogs/20251122-testing-internal-bloc-events/example/)[^example_code].
+Additionally, the complete example source code is available in my [GitHub](https://github.com/alestiago/alestiago/tree/master/docs/blogs/20251122-testing-internal-bloc-events/example/)[^example_code].
 
 [^observing_a_bloc]: Angelov, F. ([2020](https://github.com/felangel/bloc/commit/9918078fe91b4c2961b17070c985700b293ba616)). Observing a Bloc. Bloc Library. Retrieved November 2025, from https://bloclibrary.dev/bloc-concepts/#observing-a-bloc
 [^adding_events_within_a_bloc]: Angelov, F. ([2022](https://github.com/felangel/bloc/pull/3633)). Adding events within a Bloc. Bloc Library. Retrieved November 2025, from https://bloclibrary.dev/faqs/#adding-events-within-a-bloc
